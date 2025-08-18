@@ -15,3 +15,14 @@ export async function createNewTask(title: string) {
 
   return resData;
 }
+
+export async function getTaskList() {
+  const response = await fetch('https://easydev.club/api/v1/todos');
+  const resData = await response.json();
+
+  if (!response.ok) {
+    throw new Error('Failed to load tasks');
+  }
+
+  return resData;
+}

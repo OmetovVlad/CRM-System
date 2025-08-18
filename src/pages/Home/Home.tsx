@@ -1,8 +1,9 @@
 import { NewTask } from '../../components/NewTask';
-import { createNewTask } from '../../api/api.ts';
-import { useState } from 'react';
+import { createNewTask, getTaskList } from '../../api/api.ts';
+import { useEffect, useState } from 'react';
+import { TasksList } from '../../components/TasksList';
 
-interface Task {
+export interface Task {
   id: number;
   title: string;
   isDone: boolean;
@@ -10,11 +11,24 @@ interface Task {
 }
 
 const Home = () => {
-  const initialState: Task[] = [
-    { id: 1, title: 'test', isDone: false, created: '2025-08-17T09:31:56.044667Z' },
-  ];
+  const [tasksList, setTasksList] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [tasksList, setTasksList] = useState<Task[]>(initialState);
+  useEffect(() => {
+    setIsLoading(true);
+    async function fetchTasks() {
+      try {
+        return await getTaskList();
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetchTasks().then((res) => {
+      setTasksList(res.data);
+      setIsLoading(false);
+    });
+  }, []);
 
   const addNewTask = async (title: string) => {
     try {
@@ -30,6 +44,8 @@ const Home = () => {
     <>
       <h1>Todo List 📋</h1>
       <NewTask handleButton={addNewTask} />
+      {isLoading && 'Loading...'}
+      <TasksList tasksList={tasksList} />
     </>
   );
 };
