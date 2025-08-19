@@ -13,6 +13,15 @@ export const NewTask = ({ handleButton }: props) => {
     setNewTask(event.target.value);
   };
 
+  const sendHandle = (title: string) => {
+    if (title.length < 2 || title.length > 64) {
+      return console.log('Задача должна быть больше 2 и не более 64 символов.');
+    }
+
+    handleButton(title);
+    setNewTask('');
+  };
+
   return (
     <header className={styles.newTask}>
       <div className={styles.form}>
@@ -22,11 +31,7 @@ export const NewTask = ({ handleButton }: props) => {
           onChange={(event) => handleInputChange(event)}
           placeholder={'Задача, которую нужно сделать...'}
         />
-        <button
-          onClick={() => {
-            handleButton(newTask);
-          }}
-        >
+        <button onClick={() => sendHandle(newTask)}>
           <PlusCircleIcon />
           <span>Добавить</span>
         </button>
