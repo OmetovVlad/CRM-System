@@ -1,5 +1,6 @@
 .newTask {
   .form {
+    position: relative;
     padding: .25em;
     display: flex;
     flex-direction: row;
@@ -42,5 +43,19 @@
         height: 1.5em;
       }
     }
+
+    .error {
+      position: absolute;
+      bottom: 0;
+      left: 2.25em;
+      right: 2.25em;
+      transform: translateY(100%);
+      color: #971515;
+
+      span {
+        font-size: .8em;
+      }
+    }
+
   }
 }

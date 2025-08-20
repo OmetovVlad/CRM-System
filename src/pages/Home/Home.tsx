@@ -1,6 +1,6 @@
 import { NewTask } from '../../components/NewTask';
 import { createNewTask, deleteTask, getTaskList, updateTask } from '../../api/api.ts';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { TasksList } from '../../components/TasksList';
 import { TaskGroups } from '../../components/TaskGroups';
 
@@ -21,32 +21,25 @@ const Home = () => {
     inWork: 0,
   });
 
-  useEffect(() => {
-    setIsLoading(true);
-    async function fetchTasks() {
-      try {
-        return await getTaskList(filter);
-      } catch (error) {
-        console.log(error);
-      }
-    }
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await getTaskList(filter);
 
-    fetchTasks().then((res) => {
-      setTasksList(res.data);
-      setInfo(res.info);
-      setIsLoading(false);
-    });
+      if (res) {
+        setTasksList(res.data);
+        setInfo(res.info);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }, [filter]);
 
   useEffect(() => {
-    const completed = tasksList.filter((task) => task.isDone).length;
-    const inWork = tasksList.length - completed;
-    setInfo({
-      all: tasksList.length,
-      completed: completed,
-      inWork: inWork,
+    setIsLoading(true);
+    fetchData().then(() => {
+      setIsLoading(false);
     });
-  }, [tasksList]);
+  }, [fetchData]);
 
   const changeFilter = (filter: string) => {
     setFilter(filter);
@@ -54,9 +47,8 @@ const Home = () => {
 
   const addNewTask = async (title: string) => {
     try {
-      const newTask: Task = await createNewTask(title);
-      setInfo({ ...info, all: info.all + 1, inWork: info.inWork + 1 });
-      setTasksList((prev) => [...prev, newTask]);
+      await createNewTask(title);
+      fetchData().then(() => {});
     } catch (error) {
       const myError = error as Error;
       console.log(myError.message);
@@ -66,12 +58,7 @@ const Home = () => {
   const handleUpdateTask = async (id: number, title: string, isDone: boolean) => {
     try {
       await updateTask(id, title, isDone);
-
-      setTasksList(
-        tasksList.map((item) => {
-          return item.id === id ? { ...item, title, isDone } : item;
-        }),
-      );
+      fetchData().then(() => {});
     } catch (error) {
       const myError = error as Error;
       console.log(myError.message);
@@ -81,8 +68,7 @@ const Home = () => {
   const handleDelete = async (id: number) => {
     try {
       await deleteTask(id);
-
-      setTasksList((prev) => prev.filter((item) => item.id !== id));
+      fetchData().then(() => {});
     } catch (error) {
       setTasksList(tasksList);
 
@@ -95,16 +81,17 @@ const Home = () => {
     <>
       <h1>Todo List 📋</h1>
       <NewTask handleButton={addNewTask} />
-      {isLoading && 'Loading...'}
+      {isLoading && <h2>Loading...</h2>}
       {!isLoading && (
         <>
           <TaskGroups filter={filter} info={info} setFilter={changeFilter} />
-          <TasksList
-            filter={filter}
-            tasksList={tasksList}
-            handleUpdateTask={handleUpdateTask}
-            handleDelete={handleDelete}
-          />
+          {tasksList.length > 0 && (
+            <TasksList
+              tasksList={tasksList}
+              handleUpdateTask={handleUpdateTask}
+              handleDelete={handleDelete}
+            />
+          )}
         </>
       )}
     </>

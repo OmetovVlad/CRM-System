@@ -8,6 +8,7 @@ type props = {
 
 export const NewTask = ({ handleButton }: props) => {
   const [newTask, setNewTask] = useState('');
+  const [error, setError] = useState('');
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewTask(event.target.value);
@@ -15,9 +16,10 @@ export const NewTask = ({ handleButton }: props) => {
 
   const sendHandle = (title: string) => {
     if (title.length < 2 || title.length > 64) {
-      return console.log('Задача должна быть больше 2 и не более 64 символов.');
+      return setError('Задача должна быть больше 2 и не более 64 символов.');
     }
 
+    setError('');
     handleButton(title);
     setNewTask('');
   };
@@ -35,6 +37,11 @@ export const NewTask = ({ handleButton }: props) => {
           <PlusCircleIcon />
           <span>Добавить</span>
         </button>
+        {error && (
+          <div className={styles.error}>
+            <span>{error}</span>
+          </div>
+        )}
       </div>
     </header>
   );
