@@ -28,6 +28,7 @@ export const TaskItem = ({ handleUpdateTask, handleDelete, id, title, isDone }: 
   });
 
   const [isEdit, setEdit] = useState(false);
+  const [error, setError] = useState('');
 
   const checkboxHandler = () => {
     setTask((prev) => {
@@ -47,13 +48,21 @@ export const TaskItem = ({ handleUpdateTask, handleDelete, id, title, isDone }: 
   };
 
   const changeTitleHandler = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setTask({ ...task, title: event.target.value });
+    const title = event.target.value.replace(/\s+/g, ' ');
+
+    setTask({ ...task, title: title });
   };
 
   const handleSave = () => {
     if (task !== prevDataTask) {
+      if (task.title.trim().length < 2 || task.title.trim().length > 64) {
+        return setError('Задача должна быть больше 2 и не более 64 символов.');
+      }
+
       handleUpdateTask(task.id, task.title, task.isDone);
     }
+
+    setError('');
     editButtonHandler();
   };
 
@@ -64,6 +73,12 @@ export const TaskItem = ({ handleUpdateTask, handleDelete, id, title, isDone }: 
 
   return (
     <div className={styles.taskItem}>
+      {error && (
+        <div className={styles.error}>
+          <span>{error}</span>
+        </div>
+      )}
+
       <label className={styles.checkbox}>
         <input type="checkbox" onChange={checkboxHandler} checked={task.isDone} />
         <div>

@@ -11,10 +11,12 @@ export const NewTask = ({ handleButton }: props) => {
   const [error, setError] = useState('');
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setNewTask(event.target.value);
+    setNewTask(event.target.value.replace(/\s+/g, ' '));
   };
 
   const sendHandle = (title: string) => {
+    title = title.trim();
+
     if (title.length < 2 || title.length > 64) {
       return setError('Задача должна быть больше 2 и не более 64 символов.');
     }
