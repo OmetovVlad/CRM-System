@@ -1,4 +1,6 @@
-export async function createNewTask(title: string) {
+import type { MetaResponse, Todo, TodoInfo, TodoRequest } from '../types';
+
+export async function createNewTask({ title }: TodoRequest): Promise<Todo> {
   const response = await fetch('https://easydev.club/api/v1/todos', {
     method: 'POST',
     body: JSON.stringify({ title: title }),
@@ -16,7 +18,7 @@ export async function createNewTask(title: string) {
   return resData;
 }
 
-export async function getTaskList(filter: string) {
+export async function getTaskList(filter: string): Promise<MetaResponse<Todo, TodoInfo>> {
   const response = await fetch(`https://easydev.club/api/v1/todos?filter=${filter}`);
   const resData = await response.json();
 
@@ -40,10 +42,10 @@ export async function deleteTask(id: number) {
   }
 }
 
-export async function updateTask(id: number, title: string, isDone: boolean) {
+export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
   const response = await fetch(`https://easydev.club/api/v1/todos/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ isDone: isDone, title: title }),
+    body: JSON.stringify(todo),
     headers: {
       'Content-Type': 'application/json',
     },

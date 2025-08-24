@@ -1,14 +1,25 @@
 import styles from './NewTask.module.scss';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import { useState, type ChangeEvent } from 'react';
+import { createNewTask } from '../../api';
 
 type props = {
-  handleButton: (title: string) => void;
+  updateTaskList: () => void;
 };
 
-export const NewTask = ({ handleButton }: props) => {
+export const NewTask = ({ updateTaskList }: props) => {
   const [newTask, setNewTask] = useState('');
   const [error, setError] = useState('');
+
+  const addNewTask = async (title: string) => {
+    try {
+      await createNewTask({ title });
+      updateTaskList();
+    } catch (error) {
+      const myError = error as Error;
+      console.log(myError.message);
+    }
+  };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNewTask(event.target.value.replace(/\s+/g, ' '));
@@ -18,11 +29,11 @@ export const NewTask = ({ handleButton }: props) => {
     title = title.trim();
 
     if (title.length < 2 || title.length > 64) {
-      return setError('Задача должна быть больше 2 и не более 64 символов.');
+      return setError('Задача должна быть не менее 2 и не более 64 символов.');
     }
 
     setError('');
-    handleButton(title);
+    addNewTask(title);
     setNewTask('');
   };
 

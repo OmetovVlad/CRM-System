@@ -1,12 +1,12 @@
 import { Route, Routes } from 'react-router-dom';
-import Home from './pages/Home/Home.tsx';
+import TodoListPage from './pages/TodoListPage.tsx';
 import { Layout } from './components/Layout';
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
+        <Route index element={<TodoListPage />} />
       </Route>
     </Routes>
   );

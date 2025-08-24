@@ -1,4 +1,4 @@
-import type { Task } from '../../pages/Home/Home.tsx';
+import type { Task } from '../../pages/TodoListPage.tsx';
 import {
   CheckCircleIcon,
   PencilSquareIcon,
@@ -8,13 +8,13 @@ import {
 } from '@heroicons/react/24/outline';
 import styles from './TasksItem.module.scss';
 import { type ChangeEvent, useState } from 'react';
+import { deleteTask, updateTask } from '../../api';
 
-type Props = {
-  handleDelete: (id: number) => void;
-  handleUpdateTask: (id: number, title: string, isDone: boolean) => void;
-} & Task;
+interface TaskItemProps extends Task {
+  updateTaskList: () => void;
+}
 
-export const TaskItem = ({ handleUpdateTask, handleDelete, id, title, isDone }: Props) => {
+export const TaskItem = ({ id, title, isDone, updateTaskList }: TaskItemProps) => {
   const [task, setTask] = useState({
     id: id,
     title: title,
@@ -30,15 +30,33 @@ export const TaskItem = ({ handleUpdateTask, handleDelete, id, title, isDone }: 
   const [isEdit, setEdit] = useState(false);
   const [error, setError] = useState('');
 
+  const handleUpdateTask = async (id: number, title: string, isDone: boolean) => {
+    try {
+      await updateTask(id, { title, isDone });
+      updateTaskList();
+    } catch (error) {
+      const myError = error as Error;
+      console.log(myError.message);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteTask(id);
+      updateTaskList();
+    } catch (error) {
+      const myError = error as Error;
+      console.log(myError.message);
+    }
+  };
+
   const checkboxHandler = () => {
     setTask((prev) => {
-      const updated = { ...prev, isDone: !prev.isDone };
-
       if (!isEdit) {
         handleUpdateTask(task.id, task.title, !prev.isDone);
       }
 
-      return updated;
+      return { ...prev, isDone: !prev.isDone };
     });
   };
 
@@ -56,7 +74,7 @@ export const TaskItem = ({ handleUpdateTask, handleDelete, id, title, isDone }: 
   const handleSave = () => {
     if (task !== prevDataTask) {
       if (task.title.trim().length < 2 || task.title.trim().length > 64) {
-        return setError('Задача должна быть больше 2 и не более 64 символов.');
+        return setError('Задача должна быть не менее 2 и не более 64 символов.');
       }
 
       handleUpdateTask(task.id, task.title, task.isDone);
