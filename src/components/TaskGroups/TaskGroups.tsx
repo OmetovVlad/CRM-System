@@ -1,33 +1,32 @@
 import styles from './TaskGroups.module.scss';
+import type { Filter, TodoInfo } from '../../types';
 
-type TodoInfo = {
-  all: number;
-  completed: number;
-  inWork: number;
-};
-
-type Filter = {
-  filter: string;
+type FilterProps = {
+  filter: Filter;
   info: TodoInfo;
-  setFilter: (filter: string) => void;
+  setFilter: (filter: Filter) => void;
 };
 
-export const TaskGroups = ({ filter, info, setFilter }: Filter) => {
+export const TaskGroups = ({ filter, info, setFilter }: FilterProps) => {
   return (
     <div className={styles.taskGroups}>
-      {Object.entries(info).map(([key, value]) => (
-        <button
-          key={key}
-          onClick={() => {
-            setFilter(key);
-          }}
-          className={filter === key ? styles.active : ''}
-        >
-          {key === 'all' ? 'Все ' : null}
-          {key === 'inWork' ? 'В работе ' : null}
-          {key === 'completed' ? 'Сделано ' : null}({value})
-        </button>
-      ))}
+      {Object.entries(info).map(([key, value]) => {
+        const typedKey = key as Filter;
+
+        return (
+          <button
+            key={typedKey}
+            onClick={() => {
+              setFilter(typedKey);
+            }}
+            className={filter === key ? styles.active : ''}
+          >
+            {key === 'all' ? 'Все ' : null}
+            {key === 'inWork' ? 'В работе ' : null}
+            {key === 'completed' ? 'Сделано ' : null}({value})
+          </button>
+        );
+      })}
     </div>
   );
 };

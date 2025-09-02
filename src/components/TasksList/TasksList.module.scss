@@ -1,9 +1,9 @@
 .tasksList {
   margin-top: 1em;
-  padding: .25em;
+  padding: .1em;
   display: flex;
   flex-direction: column;
   border-radius: 2em;
-  background: rgba(25, 74, 143, 0.1);
-  gap: .25em;
+  background: var(--neutral-light);
+  gap: .1em;
 }

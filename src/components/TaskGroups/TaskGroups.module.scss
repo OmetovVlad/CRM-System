@@ -14,10 +14,10 @@
     border: none;
     letter-spacing: 0.05em;
     border-radius: 2em;
-    color: #194a8f;
+    color: var(--primary-light);
     &.active {
       pointer-events: none;
-      font-weight: bold;
+      color: var(--primary-dark);
     }
   }
 }

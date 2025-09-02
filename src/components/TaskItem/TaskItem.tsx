@@ -1,34 +1,23 @@
-import type { Task } from '../../pages/TodoListPage.tsx';
-import {
-  CheckCircleIcon,
-  PencilSquareIcon,
-  TrashIcon,
-  CheckIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+import { PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styles from './TasksItem.module.scss';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, type FormEvent, useState } from 'react';
 import { deleteTask, updateTask } from '../../api';
+import type { Todo } from '../../types';
+import { IconButton } from '../../ui/IconButton';
+import { Checkbox } from '../../ui/Checkbox';
+import { validateTodoTitle } from '../../helpers/validateTodoTitle.ts';
 
-interface TaskItemProps extends Task {
+interface TaskItemProps {
+  task: Todo;
   updateTaskList: () => void;
 }
 
-export const TaskItem = ({ id, title, isDone, updateTaskList }: TaskItemProps) => {
-  const [task, setTask] = useState({
-    id: id,
-    title: title,
-    isDone: isDone,
-  });
+export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) => {
+  const [task, setTask] = useState<Todo>(currentTask);
+  const [prevDataTask, setPrevDataTask] = useState<Todo>(currentTask);
 
-  const [prevDataTask, setPrevDataTask] = useState({
-    id: id,
-    title: title,
-    isDone: isDone,
-  });
-
-  const [isEdit, setEdit] = useState(false);
-  const [error, setError] = useState('');
+  const [isEdit, setEdit] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   const handleUpdateTask = async (id: number, title: string, isDone: boolean) => {
     try {
@@ -36,104 +25,98 @@ export const TaskItem = ({ id, title, isDone, updateTaskList }: TaskItemProps) =
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      console.log(myError.message);
+      alert(myError.message);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async () => {
     try {
-      await deleteTask(id);
+      await deleteTask(task.id);
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      console.log(myError.message);
+      alert(myError.message);
     }
   };
 
-  const checkboxHandler = () => {
+  const handleCheckbox = () => {
     setTask((prev) => {
       if (!isEdit) {
-        handleUpdateTask(task.id, task.title, !prev.isDone);
+        void handleUpdateTask(task.id, task.title, !prev.isDone);
       }
 
       return { ...prev, isDone: !prev.isDone };
     });
   };
 
-  const editButtonHandler = () => {
+  const handleStartEdit = () => {
     setPrevDataTask(task);
-    setEdit((prev) => !prev);
+    setEdit(true);
   };
 
-  const changeTitleHandler = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    const title = event.target.value.replace(/\s+/g, ' ');
-
-    setTask({ ...task, title: title });
+  const handleEndEdit = () => {
+    setEdit(false);
   };
 
-  const handleSave = () => {
+  const handleChangeTitle = (event: ChangeEvent<HTMLInputElement>) => {
+    setTask({ ...task, title: event.target.value });
+  };
+
+  const handleSave = (event: FormEvent) => {
+    event.preventDefault();
+
     if (task !== prevDataTask) {
-      if (task.title.trim().length < 2 || task.title.trim().length > 64) {
-        return setError('Задача должна быть не менее 2 и не более 64 символов.');
+      const validationResult = validateTodoTitle(task.title);
+
+      if (validationResult.error) {
+        return setError(validationResult.error);
       }
 
-      handleUpdateTask(task.id, task.title, task.isDone);
+      handleUpdateTask(task.id, validationResult.title, task.isDone);
     }
 
     setError('');
-    editButtonHandler();
+    handleEndEdit();
   };
 
   const handleCancel = () => {
     setTask(prevDataTask);
-    editButtonHandler();
+    setError('');
+    handleEndEdit();
   };
 
+  const classList = [styles.taskItem, task.isDone ? styles.complete : ''];
+
   return (
-    <div className={styles.taskItem}>
-      {error && (
-        <div className={styles.error}>
-          <span>{error}</span>
-        </div>
-      )}
-
-      <label className={styles.checkbox}>
-        <input type="checkbox" onChange={checkboxHandler} checked={task.isDone} />
-        <div>
-          <CheckCircleIcon className={styles.checked} />
-        </div>
-      </label>
-
-      <div className={styles.title}>
-        {isEdit && <textarea value={task.title} onChange={(event) => changeTitleHandler(event)} />}
-        {!isEdit && task.title}
-      </div>
-
-      <div className={styles.buttons}>
-        {isEdit && (
-          <>
-            <button className={styles.green} onClick={handleSave}>
-              <CheckIcon />
-            </button>
-
-            <button className={styles.red} onClick={handleCancel}>
-              <XMarkIcon />
-            </button>
-          </>
+    <div className={classList.join(' ')}>
+      <form onSubmit={handleSave}>
+        {error && (
+          <div className={styles.error}>
+            <span>{error}</span>
+          </div>
         )}
 
-        {!isEdit && (
-          <>
-            <button onClick={editButtonHandler}>
-              <PencilSquareIcon />
-            </button>
+        <Checkbox onChange={handleCheckbox} checked={task.isDone} />
 
-            <button className={styles.red} onClick={() => handleDelete(id)}>
-              <TrashIcon />
-            </button>
-          </>
-        )}
-      </div>
+        {!isEdit && <div className={styles.title}>{task.title}</div>}
+        {isEdit && <input name="title" value={task.title} onChange={handleChangeTitle} />}
+
+        <div className={styles.buttons}>
+          {isEdit && (
+            <>
+              <IconButton variant={'success'} icon={<CheckIcon />} />
+              <IconButton variant={'danger'} icon={<XMarkIcon />} onClick={handleCancel} />
+            </>
+          )}
+
+          {!isEdit && (
+            <>
+              <IconButton icon={<PencilSquareIcon />} onClick={handleStartEdit} />
+              <IconButton variant={'danger'} icon={<TrashIcon />} onClick={handleDelete} />
+            </>
+          )}
+        </div>
+      </form>
     </div>
   );
 };

@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: space-between;
     border-radius: 2em;
-    background: rgba(25, 74, 143, 0.1);
+    background: var(--neutral-light);
     gap: .5em;
 
     input,
@@ -25,34 +25,16 @@
       background: #fff;
     }
 
-    button {
-      border: none;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      background: #194a8f;
-      color: #fff;
-      gap: .5em;
-
-      span {
-
-      }
-
-      svg {
-        width: 1.5em;
-        height: 1.5em;
-      }
-    }
-
     .error {
       position: absolute;
       bottom: 0;
       left: 2.25em;
       right: 2.25em;
       transform: translateY(100%);
-      color: #971515;
+      color: var(--danger);
 
-      span {
+      p {
+        margin: 0;
         font-size: .8em;
       }
     }

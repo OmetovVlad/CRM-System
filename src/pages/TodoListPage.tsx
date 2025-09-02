@@ -3,19 +3,12 @@ import { getTaskList } from '../api';
 import { useCallback, useEffect, useState } from 'react';
 import { TasksList } from '../components/TasksList';
 import { TaskGroups } from '../components/TaskGroups';
-import type { TodoInfo } from '../types';
-
-export interface Task {
-  id: number;
-  title: string;
-  isDone: boolean;
-  created: string;
-}
+import type { Filter, Todo, TodoInfo } from '../types';
 
 const TodoListPage = () => {
-  const [tasksList, setTasksList] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [tasksList, setTasksList] = useState<Todo[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [filter, setFilter] = useState<Filter>('all');
   const [info, setInfo] = useState<TodoInfo>({
     all: 0,
     completed: 0,
@@ -34,20 +27,42 @@ const TodoListPage = () => {
         }
       }
     } catch (error) {
-      console.log(error);
+      const myError = error as Error;
+      alert(myError.message);
     }
   }, [filter]);
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchData().then(() => {
-      setIsLoading(false);
-    });
-  }, [fetchData]);
+    /* Спросить: как лучше писать */
 
-  const changeFilter = (filter: string) => {
-    setFilter(filter);
-  };
+    // (async () => {
+    //   setIsLoading(true);
+    //
+    //   try {
+    //     await fetchData();
+    //   } catch (error) {
+    //     const myError = error as Error;
+    //     alert(myError.message);
+    //   }
+    //
+    //   setIsLoading(false);
+    // })();
+
+    const load = async () => {
+      setIsLoading(true);
+
+      try {
+        await fetchData();
+      } catch (error) {
+        const myError = error as Error;
+        alert(myError.message);
+      }
+
+      setIsLoading(false);
+    };
+
+    void load();
+  }, [fetchData]);
 
   return (
     <>
@@ -56,8 +71,8 @@ const TodoListPage = () => {
       {isLoading && <h2>Loading...</h2>}
       {!isLoading && (
         <>
-          <TaskGroups filter={filter} info={info} setFilter={changeFilter} />
-          {tasksList.length > 0 && <TasksList tasksList={tasksList} updateTaskList={fetchData} />}
+          <TaskGroups filter={filter} info={info} setFilter={setFilter} />
+          {!!tasksList.length && <TasksList tasksList={tasksList} updateTaskList={fetchData} />}
         </>
       )}
     </>

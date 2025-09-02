@@ -1,61 +1,66 @@
 import styles from './NewTask.module.scss';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
-import { useState, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent, memo } from 'react';
 import { createNewTask } from '../../api';
+import { Button } from '../../ui/Button';
+import { validateTodoTitle } from '../../helpers/validateTodoTitle.ts';
 
 type props = {
   updateTaskList: () => void;
 };
 
-export const NewTask = ({ updateTaskList }: props) => {
-  const [newTask, setNewTask] = useState('');
-  const [error, setError] = useState('');
-
-  const addNewTask = async (title: string) => {
-    try {
-      await createNewTask({ title });
-      updateTaskList();
-    } catch (error) {
-      const myError = error as Error;
-      console.log(myError.message);
-    }
-  };
+export const NewTask = memo(({ updateTaskList }: props) => {
+  const [newTask, setNewTask] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setNewTask(event.target.value.replace(/\s+/g, ' '));
+    setNewTask(event.target.value);
   };
 
-  const sendHandle = (title: string) => {
-    title = title.trim();
+  const handleSend = async (event: FormEvent) => {
+    event.preventDefault();
 
-    if (title.length < 2 || title.length > 64) {
-      return setError('Задача должна быть не менее 2 и не более 64 символов.');
+    const validationResult = validateTodoTitle(newTask);
+
+    if (validationResult.error) {
+      setNewTask(validationResult.title);
+      return setError(validationResult.error);
     }
 
-    setError('');
-    addNewTask(title);
-    setNewTask('');
+    try {
+      await createNewTask({ title: validationResult.title });
+      updateTaskList();
+      setError('');
+      setNewTask('');
+    } catch (error) {
+      const myError = error as Error;
+      alert(myError.message);
+    }
   };
 
   return (
-    <header className={styles.newTask}>
-      <div className={styles.form}>
+    <div className={styles.newTask}>
+      <form className={styles.form} onSubmit={handleSend}>
         <input
+          name="title"
           type="text"
+          minLength={2}
+          maxLength={64}
           value={newTask}
-          onChange={(event) => handleInputChange(event)}
+          onChange={handleInputChange}
           placeholder={'Задача, которую нужно сделать...'}
         />
-        <button onClick={() => sendHandle(newTask)}>
-          <PlusCircleIcon />
+
+        <Button icon={<PlusCircleIcon />}>
           <span>Добавить</span>
-        </button>
+        </Button>
+
         {error && (
           <div className={styles.error}>
-            <span>{error}</span>
+            <p>{error}</p>
           </div>
         )}
-      </div>
-    </header>
+      </form>
+    </div>
   );
-};
+});
