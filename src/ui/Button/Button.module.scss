@@ -1,0 +1,15 @@
+.button {
+  border: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  background: var(--primary-dark);
+  color: var(--white);
+  gap: .5em;
+
+  svg {
+    width: 1.5em;
+    height: 1.5em;
+    display: block;
+  }
+}

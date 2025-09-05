@@ -1,0 +1,43 @@
+.checkbox {
+  position: relative;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 2em;
+    height: 2em;
+    border-radius: 1em;
+    background-color: var(--secondary-light);
+
+    .checked {
+      display: block;
+      width: 1.5em;
+      height: 1.5em;
+      color: var(--white);
+      opacity: 0;
+    }
+  }
+
+  input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+
+    &:checked {
+      & + div {
+        background-color: var(--secondary-dark);
+
+        .checked {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}

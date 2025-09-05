@@ -1,0 +1,28 @@
+.button {
+  padding: .5em;
+  border: none;
+  background: none;
+  color: var(--white);
+
+  svg {
+    display: block;
+    width: 1.5em;
+    height: 1.5em;
+  }
+}
+
+.button--primary {
+  @extend .button;
+  color: var(--blue-700);
+}
+
+.button--success {
+  @extend .button;
+  color: var(--green-700);
+}
+
+.button--danger {
+  @extend .button;
+  color: var(--red-700);
+}
+

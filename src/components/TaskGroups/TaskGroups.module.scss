@@ -1,0 +1,23 @@
+.taskGroups {
+  margin-top: 1em;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+
+  button {
+    flex: 1;
+    text-align: center;
+    background: none;
+    padding: .5em 1em;
+    border: none;
+    letter-spacing: 0.05em;
+    border-radius: 2em;
+    color: var(--primary-light);
+    &.active {
+      pointer-events: none;
+      color: var(--primary-dark);
+    }
+  }
+}
