@@ -8,6 +8,12 @@ type FilterProps = {
 };
 
 export const TaskGroups = ({ filter, info, setFilter }: FilterProps) => {
+  const tabLabels: Record<Filter, string> = {
+    all: 'Все',
+    inWork: 'В работе',
+    completed: 'Сделано',
+  };
+
   return (
     <div className={styles.taskGroups}>
       {Object.entries(info).map(([key, value]) => {
@@ -21,9 +27,7 @@ export const TaskGroups = ({ filter, info, setFilter }: FilterProps) => {
             }}
             className={filter === key ? styles.active : ''}
           >
-            {key === 'all' ? 'Все ' : null}
-            {key === 'inWork' ? 'В работе ' : null}
-            {key === 'completed' ? 'Сделано ' : null}({value})
+            {tabLabels[typedKey]} ({value})
           </button>
         );
       })}
