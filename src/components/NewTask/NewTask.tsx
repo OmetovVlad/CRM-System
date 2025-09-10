@@ -7,10 +7,11 @@ import { useForm } from 'antd/es/form/Form';
 import Title from 'antd/es/typography/Title';
 
 type props = {
+  errorAlert: (message: string) => void;
   updateTaskList: () => void;
 };
 
-export const NewTask = memo(({ updateTaskList }: props) => {
+export const NewTask = memo(({ errorAlert, updateTaskList }: props) => {
   const [form] = useForm();
 
   const handleCreateTask = async (values: { title: string }) => {
@@ -21,7 +22,7 @@ export const NewTask = memo(({ updateTaskList }: props) => {
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+      errorAlert(myError.message);
     }
   };
 

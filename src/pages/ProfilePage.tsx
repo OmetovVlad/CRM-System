@@ -1,5 +1,11 @@
+import Title from 'antd/es/typography/Title';
+
 const ProfilePage = () => {
-  return <h1>Привет</h1>;
+  return (
+    <Title level={2} style={{ marginTop: 0 }}>
+      Привет
+    </Title>
+  );
 };
 
 export default ProfilePage;

@@ -9,10 +9,11 @@ import { useForm } from 'antd/es/form/Form';
 
 interface TaskItemProps {
   task: Todo;
+  errorAlert: (message: string) => void;
   updateTaskList: () => void;
 }
 
-export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) => {
+export const TaskItem = ({ task: currentTask, errorAlert, updateTaskList }: TaskItemProps) => {
   const [form] = useForm();
 
   const [isEdit, setEdit] = useState<boolean>(false);
@@ -23,7 +24,7 @@ export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) =
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+      errorAlert(myError.message);
     }
   };
 
@@ -33,7 +34,7 @@ export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) =
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+      errorAlert(myError.message);
     }
   };
 

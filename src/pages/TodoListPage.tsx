@@ -6,7 +6,11 @@ import type { Filter, Todo, TodoInfo } from '../types';
 import { Empty, Flex, Spin } from 'antd';
 import { NewTask } from '../components/NewTask';
 
-const TodoListPage = () => {
+interface Props {
+  errorAlert: (message: string) => void;
+}
+
+const TodoListPage = ({ errorAlert }: Props) => {
   const [tasksList, setTasksList] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<Filter>('all');
@@ -29,7 +33,8 @@ const TodoListPage = () => {
       }
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+
+      errorAlert(myError.message);
     }
   }, [filter]);
 
@@ -43,7 +48,7 @@ const TodoListPage = () => {
     //     await fetchData();
     //   } catch (error) {
     //     const myError = error as Error;
-    //     alert(myError.message);
+    //     errorAlert(myError.message);
     //   }
     //
     //   setIsLoading(false);
@@ -56,7 +61,7 @@ const TodoListPage = () => {
         await fetchData();
       } catch (error) {
         const myError = error as Error;
-        alert(myError.message);
+        errorAlert(myError.message);
       }
 
       setIsLoading(false);
@@ -75,7 +80,7 @@ const TodoListPage = () => {
 
   return (
     <>
-      <NewTask updateTaskList={fetchData} />
+      <NewTask errorAlert={errorAlert} updateTaskList={fetchData} />
       {isLoading && (
         <Flex align={'center'} justify={'center'} style={{ margin: '2em 0' }}>
           <Spin size="large" />
@@ -84,7 +89,9 @@ const TodoListPage = () => {
       {!isLoading && (
         <>
           <TaskFilter filter={filter} info={info} setFilter={setFilter} />
-          {!!tasksList.length && <TasksList tasksList={tasksList} updateTaskList={fetchData} />}
+          {!!tasksList.length && (
+            <TasksList tasksList={tasksList} errorAlert={errorAlert} updateTaskList={fetchData} />
+          )}
           {!tasksList.length && (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}

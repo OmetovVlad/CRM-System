@@ -7,11 +7,11 @@ type MenuItem = Required<MenuProps>['items'][number];
 
 const items: MenuItem[] = [
   {
-    key: '0',
+    key: '/',
     label: <Link to={'/'}>список задач</Link>,
   },
   {
-    key: '1',
+    key: '/profile',
     label: <Link to={'/profile'}>профиль</Link>,
   },
 ];
@@ -35,14 +35,18 @@ export const Layout = () => {
   return (
     <AntLayout>
       <Sider style={siderStyle}>
-        <Menu theme={'dark'} defaultSelectedKeys={['0']} mode="inline" items={items} />
+        <Menu
+          theme={'dark'}
+          defaultSelectedKeys={[location.pathname]}
+          mode="inline"
+          items={items}
+        />
       </Sider>
       <AntLayout>
-        <Content style={{ margin: '1.5em 1em 0', overflow: 'initial' }}>
+        <Content style={{ margin: '1.5em', overflow: 'initial' }}>
           <div
             style={{
-              padding: 24,
-              minHeight: 360,
+              padding: '1.5em',
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
             }}
