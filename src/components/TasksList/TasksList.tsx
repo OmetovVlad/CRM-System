@@ -1,6 +1,6 @@
-import styles from './TasksList.module.scss';
 import { TaskItem } from '../TaskItem';
 import type { Todo } from '../../types';
+import { Flex } from 'antd';
 
 type Props = {
   tasksList: Todo[];
@@ -9,10 +9,10 @@ type Props = {
 
 export const TasksList = ({ tasksList, updateTaskList }: Props) => {
   return (
-    <div className={styles.tasksList}>
+    <Flex gap="middle" vertical>
       {tasksList.map((task) => (
         <TaskItem key={task.id} task={task} updateTaskList={updateTaskList} />
       ))}
-    </div>
+    </Flex>
   );
 };

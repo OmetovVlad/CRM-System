@@ -1,37 +1,24 @@
-import styles from './NewTask.module.scss';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
-import { useState, type ChangeEvent, type FormEvent, memo } from 'react';
+import { memo } from 'react';
 import { createNewTask } from '../../api';
 import { Button } from '../../ui/Button';
-import { validateTodoTitle } from '../../helpers/validateTodoTitle.ts';
+import { PlusOutlined } from '@ant-design/icons';
+import { ConfigProvider, Flex, Form, Input } from 'antd';
+import { useForm } from 'antd/es/form/Form';
+import Title from 'antd/es/typography/Title';
 
 type props = {
   updateTaskList: () => void;
 };
 
 export const NewTask = memo(({ updateTaskList }: props) => {
-  const [newTask, setNewTask] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [form] = useForm();
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setNewTask(event.target.value);
-  };
-
-  const handleSend = async (event: FormEvent) => {
-    event.preventDefault();
-
-    const validationResult = validateTodoTitle(newTask);
-
-    if (validationResult.error) {
-      setNewTask(validationResult.title);
-      return setError(validationResult.error);
-    }
+  const handleCreateTask = async (values: { title: string }) => {
+    const { title } = values;
 
     try {
-      await createNewTask({ title: validationResult.title });
+      await createNewTask({ title });
       updateTaskList();
-      setError('');
-      setNewTask('');
     } catch (error) {
       const myError = error as Error;
       alert(myError.message);
@@ -39,28 +26,45 @@ export const NewTask = memo(({ updateTaskList }: props) => {
   };
 
   return (
-    <div className={styles.newTask}>
-      <form className={styles.form} onSubmit={handleSend}>
-        <input
-          name="title"
-          type="text"
-          minLength={2}
-          maxLength={64}
-          value={newTask}
-          onChange={handleInputChange}
-          placeholder={'Задача, которую нужно сделать...'}
-        />
+    <ConfigProvider
+      theme={{
+        components: {
+          Form: {
+            itemMarginBottom: 0,
+          },
+        },
+      }}
+    >
+      <Form form={form} onFinish={handleCreateTask} layout="horizontal">
+        <Title level={5} style={{ marginTop: 0 }}>
+          Создать задачу
+        </Title>
+        <Flex gap="middle">
+          <Form.Item
+            name="title"
+            rules={[
+              { required: true, message: 'Задача не может быть пустой' },
+              {
+                validator: (_, value) => {
+                  if (!value || value.trim().length >= 2) {
+                    return Promise.resolve();
+                  }
 
-        <Button icon={<PlusCircleIcon />}>
-          <span>Добавить</span>
-        </Button>
+                  return Promise.reject(new Error('Минимум 2 символа'));
+                },
+              },
+              { max: 64, message: 'Максимум 64 символа' },
+            ]}
+            style={{ flex: 1 }}
+          >
+            <Input placeholder="Задача, которую нужно сделать..." size="large" />
+          </Form.Item>
 
-        {error && (
-          <div className={styles.error}>
-            <p>{error}</p>
-          </div>
-        )}
-      </form>
-    </div>
+          <Button icon={<PlusOutlined />} htmlType="submit">
+            Добавить
+          </Button>
+        </Flex>
+      </Form>
+    </ConfigProvider>
   );
 });

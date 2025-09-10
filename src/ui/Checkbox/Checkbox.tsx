@@ -1,16 +1,13 @@
-import type { FC } from 'react';
+import type { FC, InputHTMLAttributes } from 'react';
 import styles from './Checkbox.module.scss';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 
-interface CheckboxProps {
-  onChange: () => void;
-  checked?: boolean;
-}
+type CheckboxProps = InputHTMLAttributes<HTMLInputElement>;
 
-export const Checkbox: FC<CheckboxProps> = ({ ...props }) => {
+export const Checkbox: FC<CheckboxProps> = ({ checked, onChange, ...props }) => {
   return (
     <label className={styles.checkbox}>
-      <input type={'checkbox'} {...props} />
+      <input type={'checkbox'} checked={!!checked} onChange={onChange} {...props} />
       <div>
         <CheckCircleIcon className={styles.checked} />
       </div>

@@ -1,9 +1,10 @@
-import { NewTask } from '../components/NewTask';
 import { getTaskList } from '../api';
 import { useCallback, useEffect, useState } from 'react';
 import { TasksList } from '../components/TasksList';
-import { TaskGroups } from '../components/TaskGroups';
+import { TaskFilter } from '../components/TaskFilter';
 import type { Filter, Todo, TodoInfo } from '../types';
+import { Empty, Flex, Spin } from 'antd';
+import { NewTask } from '../components/NewTask';
 
 const TodoListPage = () => {
   const [tasksList, setTasksList] = useState<Todo[]>([]);
@@ -64,15 +65,33 @@ const TodoListPage = () => {
     void load();
   }, [fetchData]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      void fetchData();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
   return (
     <>
-      <h1>Todo List 📋</h1>
       <NewTask updateTaskList={fetchData} />
-      {isLoading && <h2>Loading...</h2>}
+      {isLoading && (
+        <Flex align={'center'} justify={'center'} style={{ margin: '2em 0' }}>
+          <Spin size="large" />
+        </Flex>
+      )}
       {!isLoading && (
         <>
-          <TaskGroups filter={filter} info={info} setFilter={setFilter} />
+          <TaskFilter filter={filter} info={info} setFilter={setFilter} />
           {!!tasksList.length && <TasksList tasksList={tasksList} updateTaskList={fetchData} />}
+          {!tasksList.length && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<p>Список задач пуст</p>}
+              style={{ margin: '1em 0 0' }}
+            />
+          )}
         </>
       )}
     </>
