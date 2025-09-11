@@ -1,11 +1,10 @@
 import type { MetaResponse, Todo, TodoInfo, TodoRequest, Filter } from '../types';
 import axios from 'axios';
-
-const BASE_URL = 'https://easydev.club/api/v1';
+import { api } from './instance.ts';
 
 export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
   try {
-    const response = await axios.post<Todo>(`${BASE_URL}/todos`, todoRequest);
+    const response = await api.post<Todo>(`/todos`, todoRequest);
 
     return response.data;
   } catch (e) {
@@ -19,9 +18,9 @@ export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
 
 export async function getTaskList(filter: Filter): Promise<MetaResponse<Todo, TodoInfo>> {
   try {
-    const response = await axios.get<MetaResponse<Todo, TodoInfo>>(
-      `${BASE_URL}/todos?filter=${filter}`,
-    );
+    const response = await api.get<MetaResponse<Todo, TodoInfo>>('/todos', {
+      params: { filter },
+    });
 
     return response.data;
   } catch (e) {
@@ -35,7 +34,7 @@ export async function getTaskList(filter: Filter): Promise<MetaResponse<Todo, To
 
 export async function deleteTask(id: number) {
   try {
-    await axios.delete(`${BASE_URL}/todos/${id}`);
+    await api.delete(`/todos/${id}`);
   } catch (e) {
     if (axios.isAxiosError(e)) {
       throw new Error(e.response?.data?.message || 'Failed to delete task');
@@ -46,7 +45,7 @@ export async function deleteTask(id: number) {
 
 export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
   try {
-    const response = await axios.put(`${BASE_URL}/todos/${id}`, todo);
+    const response = await api.put(`/todos/${id}`, todo);
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
