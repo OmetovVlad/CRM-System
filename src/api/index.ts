@@ -1,78 +1,56 @@
 import type { MetaResponse, Todo, TodoInfo, TodoRequest, Filter } from '../types';
-
-const BASE_URL = 'https://easydev.club/api/v1';
+import axios from 'axios';
+import { api } from './instance.ts';
 
 export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
   try {
-    const response = await fetch(`${BASE_URL}/todos`, {
-      method: 'POST',
-      body: JSON.stringify(todoRequest),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await api.post<Todo>(`/todos`, todoRequest);
 
-    const resData = await response.json();
-
-    if (!response.ok) {
-      throw new Error('Failed to create new task');
+    return response.data;
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      throw new Error(e.response?.data?.message || 'Failed to create new task');
     }
 
-    return resData;
-  } catch (e) {
-    throw e as Error;
+    throw e;
   }
 }
 
 export async function getTaskList(filter: Filter): Promise<MetaResponse<Todo, TodoInfo>> {
   try {
-    const response = await fetch(`${BASE_URL}/todos?filter=${filter}`);
-    const resData = await response.json();
+    const response = await api.get<MetaResponse<Todo, TodoInfo>>('/todos', {
+      params: { filter },
+    });
 
-    if (!response.ok) {
-      throw new Error('Failed to load tasks');
+    return response.data;
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      throw new Error(e.response?.data?.message || 'Failed to get tasks');
     }
 
-    return resData;
-  } catch (e) {
-    throw e as Error;
+    throw e;
   }
 }
 
 export async function deleteTask(id: number) {
   try {
-    const response = await fetch(`${BASE_URL}/todos/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete task');
-    }
+    await api.delete(`/todos/${id}`);
   } catch (e) {
-    throw e as Error;
+    if (axios.isAxiosError(e)) {
+      throw new Error(e.response?.data?.message || 'Failed to delete task');
+    }
+    throw e;
   }
 }
 
 export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
   try {
-    const response = await fetch(`${BASE_URL}/todos/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(todo),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    const resData = await response.json();
-
-    if (!response.ok) {
-      throw new Error('Failed to update tasks');
-    }
-
-    return resData;
+    const response = await api.put(`/todos/${id}`, todo);
+    return response.data;
   } catch (e) {
-    throw e as Error;
+    if (axios.isAxiosError(e)) {
+      throw new Error(e.response?.data?.message || 'Failed to update task');
+    }
+    throw e;
   }
 }

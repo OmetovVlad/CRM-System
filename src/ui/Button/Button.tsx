@@ -1,16 +1,21 @@
-import type { ButtonHTMLAttributes, FC, ReactNode } from 'react';
-import styles from './Button.module.scss';
+import type { FC, ReactNode } from 'react';
+import { Button as AntdButton } from 'antd';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonVariant = 'default' | 'primary' | 'danger' | 'pink' | 'purple' | 'cyan';
+type htmlType = 'button' | 'submit' | 'reset' | undefined;
+
+interface ButtonProps {
+  color?: ButtonVariant;
   icon?: ReactNode;
+  onClick?: () => void;
+  htmlType?: htmlType;
   children?: ReactNode;
 }
 
-export const Button: FC<ButtonProps> = ({ icon, children, disabled, ...props }) => {
+export const Button: FC<ButtonProps> = ({ color = 'default', icon, children, ...props }) => {
   return (
-    <button className={styles.button} disabled={disabled} {...props}>
-      {icon}
+    <AntdButton type="primary" icon={icon} color={color} size={'large'} {...props}>
       {children}
-    </button>
+    </AntdButton>
   );
 };

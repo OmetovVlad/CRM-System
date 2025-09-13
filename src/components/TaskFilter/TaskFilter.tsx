@@ -1,5 +1,5 @@
-import styles from './TaskGroups.module.scss';
 import type { Filter, TodoInfo } from '../../types';
+import { Button, Flex } from 'antd';
 
 type FilterProps = {
   filter: Filter;
@@ -7,7 +7,7 @@ type FilterProps = {
   setFilter: (filter: Filter) => void;
 };
 
-export const TaskGroups = ({ filter, info, setFilter }: FilterProps) => {
+export const TaskFilter = ({ filter, info, setFilter }: FilterProps) => {
   const tabLabels: Record<Filter, string> = {
     all: 'Все',
     inWork: 'В работе',
@@ -15,22 +15,24 @@ export const TaskGroups = ({ filter, info, setFilter }: FilterProps) => {
   };
 
   return (
-    <div className={styles.taskGroups}>
+    <Flex gap="large" wrap style={{ margin: '2em 0 1em' }}>
       {Object.entries(info).map(([key, value]) => {
         const typedKey = key as Filter;
 
         return (
-          <button
+          <Button
             key={typedKey}
+            color="primary"
+            variant={filter === key ? 'outlined' : 'text'}
+            style={{ flex: 1 }}
             onClick={() => {
               setFilter(typedKey);
             }}
-            className={filter === key ? styles.active : ''}
           >
             {tabLabels[typedKey]} ({value})
-          </button>
+          </Button>
         );
       })}
-    </div>
+    </Flex>
   );
 };

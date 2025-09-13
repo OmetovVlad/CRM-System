@@ -1,19 +1,16 @@
-import type { ButtonHTMLAttributes, FC, ReactNode } from 'react';
-import styles from './IconButton.module.scss';
+import type { FC, ReactNode } from 'react';
+import { Button } from 'antd';
 
-type ButtonVariant = 'primary' | 'success' | 'danger';
+type ButtonVariant = 'default' | 'primary' | 'danger' | 'pink' | 'purple' | 'cyan';
+type htmlType = 'button' | 'submit' | 'reset' | undefined;
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
+interface ButtonProps {
+  color?: ButtonVariant;
   icon?: ReactNode;
+  onClick?: () => void;
+  htmlType?: htmlType;
 }
 
-export const IconButton: FC<ButtonProps> = ({ variant = 'primary', icon, ...props }) => {
-  console.log(variant);
-
-  return (
-    <button className={`${styles.button} ${styles[`button--${variant}`]}`} {...props}>
-      {icon}
-    </button>
-  );
+export const IconButton: FC<ButtonProps> = ({ color = 'default', icon, ...props }) => {
+  return <Button icon={icon} variant="filled" color={color} size={'large'} {...props}></Button>;
 };

@@ -24,4 +24,6 @@ export interface MetaResponse<T, N> {
   };
 }
 
+export type UpdateTodoRequest = Partial<Todo>;
+
 export type Filter = 'all' | 'inWork' | 'completed';

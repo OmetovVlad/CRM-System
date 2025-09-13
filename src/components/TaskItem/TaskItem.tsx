@@ -1,31 +1,33 @@
-import { PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import styles from './TasksItem.module.scss';
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { deleteTask, updateTask } from '../../api';
-import type { Todo } from '../../types';
+import type { Todo, UpdateTodoRequest } from '../../types';
 import { IconButton } from '../../ui/IconButton';
 import { Checkbox } from '../../ui/Checkbox';
-import { validateTodoTitle } from '../../helpers/validateTodoTitle.ts';
+import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Card, Flex, Form, Input, Space } from 'antd';
+import { useForm } from 'antd/es/form/Form';
 
 interface TaskItemProps {
   task: Todo;
+  notificationError: (message: string) => void;
   updateTaskList: () => void;
 }
 
-export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) => {
-  const [task, setTask] = useState<Todo>(currentTask);
-  const [prevDataTask, setPrevDataTask] = useState<Todo>(currentTask);
+export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemProps) => {
+  const TITLE_MIN = Number(import.meta.env.VITE_TITLE_MIN);
+  const TITLE_MAX = Number(import.meta.env.VITE_TITLE_MAX);
+
+  const [form] = useForm();
 
   const [isEdit, setEdit] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
 
-  const handleUpdateTask = async (id: number, title: string, isDone: boolean) => {
+  const saveTaskChanges = async (values: UpdateTodoRequest) => {
     try {
-      await updateTask(id, { title, isDone });
+      await updateTask(task.id, values);
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+      notificationError(myError.message);
     }
   };
 
@@ -35,22 +37,15 @@ export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) =
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+      notificationError(myError.message);
     }
   };
 
-  const handleCheckbox = () => {
-    setTask((prev) => {
-      if (!isEdit) {
-        void handleUpdateTask(task.id, task.title, !prev.isDone);
-      }
-
-      return { ...prev, isDone: !prev.isDone };
-    });
+  const handleCheckbox = async (event: ChangeEvent<HTMLInputElement>) => {
+    await saveTaskChanges({ isDone: event.target.checked });
   };
 
   const handleStartEdit = () => {
-    setPrevDataTask(task);
     setEdit(true);
   };
 
@@ -58,65 +53,67 @@ export const TaskItem = ({ task: currentTask, updateTaskList }: TaskItemProps) =
     setEdit(false);
   };
 
-  const handleChangeTitle = (event: ChangeEvent<HTMLInputElement>) => {
-    setTask({ ...task, title: event.target.value });
-  };
+  const handleSave = async (values: UpdateTodoRequest) => {
+    const { title, isDone } = values;
+    await saveTaskChanges({ title, isDone });
 
-  const handleSave = (event: FormEvent) => {
-    event.preventDefault();
-
-    if (task !== prevDataTask) {
-      const validationResult = validateTodoTitle(task.title);
-
-      if (validationResult.error) {
-        return setError(validationResult.error);
-      }
-
-      handleUpdateTask(task.id, validationResult.title, task.isDone);
-    }
-
-    setError('');
     handleEndEdit();
   };
 
   const handleCancel = () => {
-    setTask(prevDataTask);
-    setError('');
+    form.resetFields();
     handleEndEdit();
   };
 
-  const classList = [styles.taskItem, task.isDone ? styles.complete : ''];
-
   return (
-    <div className={classList.join(' ')}>
-      <form onSubmit={handleSave}>
-        {error && (
-          <div className={styles.error}>
-            <span>{error}</span>
-          </div>
-        )}
+    <Card>
+      <Form form={form} onFinish={handleSave} initialValues={{ ...task }} layout="horizontal">
+        <Flex gap="middle" align={'center'}>
+          <Form.Item name="isDone" valuePropName="checked">
+            <Checkbox onChange={(event) => handleCheckbox(event)} />
+          </Form.Item>
 
-        <Checkbox onChange={handleCheckbox} checked={task.isDone} />
-
-        {!isEdit && <div className={styles.title}>{task.title}</div>}
-        {isEdit && <input name="title" value={task.title} onChange={handleChangeTitle} />}
-
-        <div className={styles.buttons}>
+          {!isEdit && <div style={{ flex: 1 }}>{task.title}</div>}
           {isEdit && (
-            <>
-              <IconButton variant={'success'} icon={<CheckIcon />} />
-              <IconButton variant={'danger'} icon={<XMarkIcon />} onClick={handleCancel} />
-            </>
+            <Form.Item
+              name="title"
+              rules={[
+                { required: true, message: 'Задача не может быть пустой' },
+                {
+                  transform: (value) => value?.trim(),
+                  min: TITLE_MIN,
+                  message: `Минимум ${TITLE_MIN} символа`,
+                },
+                {
+                  transform: (value) => value?.trim(),
+                  max: TITLE_MAX,
+                  message: `Максимум ${TITLE_MAX} символа`,
+                },
+              ]}
+              required={true}
+              style={{ flex: 1 }}
+            >
+              <Input />
+            </Form.Item>
           )}
 
-          {!isEdit && (
-            <>
-              <IconButton icon={<PencilSquareIcon />} onClick={handleStartEdit} />
-              <IconButton variant={'danger'} icon={<TrashIcon />} onClick={handleDelete} />
-            </>
-          )}
-        </div>
-      </form>
-    </div>
+          <div>
+            {isEdit && (
+              <Space.Compact block>
+                <IconButton color={'cyan'} icon={<CheckOutlined />} htmlType="submit" />
+                <IconButton color={'danger'} icon={<CloseOutlined />} onClick={handleCancel} />
+              </Space.Compact>
+            )}
+
+            {!isEdit && (
+              <Space.Compact block>
+                <IconButton color={'primary'} icon={<EditOutlined />} onClick={handleStartEdit} />
+                <IconButton color={'danger'} icon={<DeleteOutlined />} onClick={handleDelete} />
+              </Space.Compact>
+            )}
+          </div>
+        </Flex>
+      </Form>
+    </Card>
   );
 };

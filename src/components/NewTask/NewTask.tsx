@@ -1,66 +1,63 @@
-import styles from './NewTask.module.scss';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
-import { useState, type ChangeEvent, type FormEvent, memo } from 'react';
+import { memo } from 'react';
 import { createNewTask } from '../../api';
 import { Button } from '../../ui/Button';
-import { validateTodoTitle } from '../../helpers/validateTodoTitle.ts';
+import { PlusOutlined } from '@ant-design/icons';
+import { Flex, Form, Input } from 'antd';
+import { useForm } from 'antd/es/form/Form';
+import type { Todo } from '../../types';
 
 type props = {
+  notificationError: (message: string) => void;
   updateTaskList: () => void;
 };
 
-export const NewTask = memo(({ updateTaskList }: props) => {
-  const [newTask, setNewTask] = useState<string>('');
-  const [error, setError] = useState<string>('');
+type CreateTodoRequest = Pick<Todo, 'title'>;
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setNewTask(event.target.value);
-  };
+export const NewTask = memo(({ notificationError, updateTaskList }: props) => {
+  const TITLE_MIN = Number(import.meta.env.VITE_TITLE_MIN);
+  const TITLE_MAX = Number(import.meta.env.VITE_TITLE_MAX);
 
-  const handleSend = async (event: FormEvent) => {
-    event.preventDefault();
+  const [form] = useForm();
 
-    const validationResult = validateTodoTitle(newTask);
-
-    if (validationResult.error) {
-      setNewTask(validationResult.title);
-      return setError(validationResult.error);
-    }
+  const handleCreateTask = async (values: CreateTodoRequest) => {
+    const { title } = values;
 
     try {
-      await createNewTask({ title: validationResult.title });
+      await createNewTask({ title });
       updateTaskList();
-      setError('');
-      setNewTask('');
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+      notificationError(myError.message);
     }
   };
 
   return (
-    <div className={styles.newTask}>
-      <form className={styles.form} onSubmit={handleSend}>
-        <input
+    <Form form={form} onFinish={handleCreateTask} layout="horizontal">
+      <Flex gap="middle">
+        <Form.Item
           name="title"
-          type="text"
-          minLength={2}
-          maxLength={64}
-          value={newTask}
-          onChange={handleInputChange}
-          placeholder={'Задача, которую нужно сделать...'}
-        />
+          rules={[
+            { required: true, message: 'Задача не может быть пустой' },
+            {
+              transform: (value) => value?.trim(),
+              min: TITLE_MIN,
+              message: `Минимум ${TITLE_MIN} символа`,
+            },
+            {
+              transform: (value) => value?.trim(),
+              max: TITLE_MAX,
+              message: `Максимум ${TITLE_MAX} символа`,
+            },
+          ]}
+          style={{ flex: 1 }}
+        >
+          <Input placeholder="Задача, которую нужно сделать..." size="large" />
+        </Form.Item>
 
-        <Button icon={<PlusCircleIcon />}>
-          <span>Добавить</span>
+        <Button icon={<PlusOutlined />} htmlType="submit">
+          Добавить
         </Button>
-
-        {error && (
-          <div className={styles.error}>
-            <p>{error}</p>
-          </div>
-        )}
-      </form>
-    </div>
+      </Flex>
+    </Form>
   );
 });

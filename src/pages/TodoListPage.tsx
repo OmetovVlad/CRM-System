@@ -1,11 +1,16 @@
-import { NewTask } from '../components/NewTask';
 import { getTaskList } from '../api';
 import { useCallback, useEffect, useState } from 'react';
 import { TasksList } from '../components/TasksList';
-import { TaskGroups } from '../components/TaskGroups';
+import { TaskFilter } from '../components/TaskFilter';
 import type { Filter, Todo, TodoInfo } from '../types';
+import { Empty, Flex, Spin } from 'antd';
+import { NewTask } from '../components/NewTask';
 
-const TodoListPage = () => {
+interface Props {
+  notificationError: (message: string) => void;
+}
+
+const TodoListPage = ({ notificationError }: Props) => {
   const [tasksList, setTasksList] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<Filter>('all');
@@ -28,7 +33,8 @@ const TodoListPage = () => {
       }
     } catch (error) {
       const myError = error as Error;
-      alert(myError.message);
+
+      notificationError(myError.message);
     }
   }, [filter]);
 
@@ -42,7 +48,7 @@ const TodoListPage = () => {
     //     await fetchData();
     //   } catch (error) {
     //     const myError = error as Error;
-    //     alert(myError.message);
+    //     errorAlert(myError.message);
     //   }
     //
     //   setIsLoading(false);
@@ -55,7 +61,7 @@ const TodoListPage = () => {
         await fetchData();
       } catch (error) {
         const myError = error as Error;
-        alert(myError.message);
+        notificationError(myError.message);
       }
 
       setIsLoading(false);
@@ -64,15 +70,39 @@ const TodoListPage = () => {
     void load();
   }, [fetchData]);
 
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      await fetchData();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
   return (
     <>
-      <h1>Todo List 📋</h1>
-      <NewTask updateTaskList={fetchData} />
-      {isLoading && <h2>Loading...</h2>}
+      <NewTask notificationError={notificationError} updateTaskList={fetchData} />
+      {isLoading && (
+        <Flex align={'center'} justify={'center'} style={{ margin: '2em 0' }}>
+          <Spin size="large" />
+        </Flex>
+      )}
       {!isLoading && (
         <>
-          <TaskGroups filter={filter} info={info} setFilter={setFilter} />
-          {!!tasksList.length && <TasksList tasksList={tasksList} updateTaskList={fetchData} />}
+          <TaskFilter filter={filter} info={info} setFilter={setFilter} />
+          {!!tasksList.length && (
+            <TasksList
+              tasksList={tasksList}
+              notificationError={notificationError}
+              updateTaskList={fetchData}
+            />
+          )}
+          {!tasksList.length && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<p>Список задач пуст</p>}
+              style={{ margin: '1em 0 0' }}
+            />
+          )}
         </>
       )}
     </>
