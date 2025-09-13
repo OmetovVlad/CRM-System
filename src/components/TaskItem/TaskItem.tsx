@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { deleteTask, updateTask } from '../../api';
-import type { Todo } from '../../types';
+import type { Todo, UpdateTodoRequest } from '../../types';
 import { IconButton } from '../../ui/IconButton';
 import { Checkbox } from '../../ui/Checkbox';
 import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
@@ -13,8 +13,6 @@ interface TaskItemProps {
   updateTaskList: () => void;
 }
 
-type UpdateTodoRequest = Pick<Todo, 'title' | 'isDone'>;
-
 export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemProps) => {
   const TITLE_MIN = Number(import.meta.env.VITE_TITLE_MIN);
   const TITLE_MAX = Number(import.meta.env.VITE_TITLE_MAX);
@@ -23,11 +21,9 @@ export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemPr
 
   const [isEdit, setEdit] = useState<boolean>(false);
 
-  const handleUpdateTask = async (values: UpdateTodoRequest) => {
-    const { title, isDone } = values;
-
+  const saveTaskChanges = async (values: UpdateTodoRequest) => {
     try {
-      await updateTask(task.id, { title, isDone });
+      await updateTask(task.id, values);
       updateTaskList();
     } catch (error) {
       const myError = error as Error;
@@ -45,8 +41,8 @@ export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemPr
     }
   };
 
-  const handleCheckbox = async () => {
-    await handleUpdateTask({ title: task.title, isDone: !task.isDone });
+  const handleCheckbox = async (event: ChangeEvent<HTMLInputElement>) => {
+    await saveTaskChanges({ isDone: event.target.checked });
   };
 
   const handleStartEdit = () => {
@@ -59,7 +55,7 @@ export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemPr
 
   const handleSave = async (values: UpdateTodoRequest) => {
     const { title, isDone } = values;
-    await handleUpdateTask({ title, isDone });
+    await saveTaskChanges({ title, isDone });
 
     handleEndEdit();
   };
@@ -74,7 +70,7 @@ export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemPr
       <Form form={form} onFinish={handleSave} initialValues={{ ...task }} layout="horizontal">
         <Flex gap="middle" align={'center'}>
           <Form.Item name="isDone" valuePropName="checked">
-            <Checkbox onChange={handleCheckbox} />
+            <Checkbox onChange={(event) => handleCheckbox(event)} />
           </Form.Item>
 
           {!isEdit && <div style={{ flex: 1 }}>{task.title}</div>}
