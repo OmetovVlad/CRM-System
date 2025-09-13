@@ -7,10 +7,10 @@ import { Empty, Flex, Spin } from 'antd';
 import { NewTask } from '../components/NewTask';
 
 interface Props {
-  errorAlert: (message: string) => void;
+  notificationError: (message: string) => void;
 }
 
-const TodoListPage = ({ errorAlert }: Props) => {
+const TodoListPage = ({ notificationError }: Props) => {
   const [tasksList, setTasksList] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<Filter>('all');
@@ -34,7 +34,7 @@ const TodoListPage = ({ errorAlert }: Props) => {
     } catch (error) {
       const myError = error as Error;
 
-      errorAlert(myError.message);
+      notificationError(myError.message);
     }
   }, [filter]);
 
@@ -61,7 +61,7 @@ const TodoListPage = ({ errorAlert }: Props) => {
         await fetchData();
       } catch (error) {
         const myError = error as Error;
-        errorAlert(myError.message);
+        notificationError(myError.message);
       }
 
       setIsLoading(false);
@@ -71,8 +71,8 @@ const TodoListPage = ({ errorAlert }: Props) => {
   }, [fetchData]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      void fetchData();
+    const interval = setInterval(async () => {
+      await fetchData();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -80,7 +80,7 @@ const TodoListPage = ({ errorAlert }: Props) => {
 
   return (
     <>
-      <NewTask errorAlert={errorAlert} updateTaskList={fetchData} />
+      <NewTask notificationError={notificationError} updateTaskList={fetchData} />
       {isLoading && (
         <Flex align={'center'} justify={'center'} style={{ margin: '2em 0' }}>
           <Spin size="large" />
@@ -90,7 +90,11 @@ const TodoListPage = ({ errorAlert }: Props) => {
         <>
           <TaskFilter filter={filter} info={info} setFilter={setFilter} />
           {!!tasksList.length && (
-            <TasksList tasksList={tasksList} errorAlert={errorAlert} updateTaskList={fetchData} />
+            <TasksList
+              tasksList={tasksList}
+              notificationError={notificationError}
+              updateTaskList={fetchData}
+            />
           )}
           {!tasksList.length && (
             <Empty

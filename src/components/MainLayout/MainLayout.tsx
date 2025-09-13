@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
-import { Layout as AntLayout, Menu, type MenuProps, theme } from 'antd';
+import { Layout, Menu, type MenuProps, theme } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 import { Content } from 'antd/es/layout/layout';
 
@@ -16,7 +16,7 @@ const items: MenuItem[] = [
   },
 ];
 
-export const Layout = () => {
+export const MainLayout = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -33,7 +33,7 @@ export const Layout = () => {
   };
 
   return (
-    <AntLayout>
+    <Layout>
       <Sider style={siderStyle}>
         <Menu
           theme={'dark'}
@@ -42,7 +42,7 @@ export const Layout = () => {
           items={items}
         />
       </Sider>
-      <AntLayout>
+      <Layout>
         <Content style={{ margin: '1.5em', overflow: 'initial' }}>
           <div
             style={{
@@ -54,7 +54,7 @@ export const Layout = () => {
             <Outlet />
           </div>
         </Content>
-      </AntLayout>
-    </AntLayout>
+      </Layout>
+    </Layout>
   );
 };
