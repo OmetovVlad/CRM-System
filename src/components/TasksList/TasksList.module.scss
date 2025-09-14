@@ -1,0 +1,9 @@
+.tasksList {
+  margin-top: 1em;
+  padding: .1em;
+  display: flex;
+  flex-direction: column;
+  border-radius: 2em;
+  background: var(--neutral-light);
+  gap: .1em;
+}
