@@ -10,6 +10,7 @@ import type {
 } from '../types';
 import axios from 'axios';
 import { instance } from './instance.ts';
+import { tokenManager } from '../utils/TokenManager.ts';
 
 export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
   try {
@@ -67,6 +68,12 @@ export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
 export async function signin(signinData: AuthData): Promise<Token> {
   try {
     const response = await instance.post(`/auth/signin`, signinData);
+
+    if (response.status === 200) {
+      tokenManager.setToken(response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
@@ -77,6 +84,8 @@ export async function signin(signinData: AuthData): Promise<Token> {
 }
 
 export async function signup(signupData: UserRegistration) {
+  console.log(signupData);
+
   try {
     const response = await instance.post(`/auth/signup`, signupData);
     return response.data;

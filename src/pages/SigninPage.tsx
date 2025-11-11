@@ -1,14 +1,19 @@
 import { Button, Card, Form, Input } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import { signin } from '../api';
+import type { AuthData } from '../types';
 
-type loginValues = {
-  username: string;
-  password: string;
-};
-
-const onFinish = (values: loginValues) => {
+const onFinish = async (values: AuthData) => {
   console.log('Received values of form: ', values);
+
+  try {
+    await signin(values);
+  } catch (error) {
+    const myError = error as Error;
+    console.error(myError);
+    // notificationError(myError.message);
+  }
 };
 
 const SigninPage = () => {

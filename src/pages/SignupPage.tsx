@@ -1,14 +1,19 @@
 import { Button, Card, Form, Input } from 'antd';
 import { LockOutlined, MailOutlined, PhoneOutlined, UserOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import type { UserRegistration } from '../types';
+import { signup } from '../api';
 
-type loginValues = {
-  username: string;
-  password: string;
-};
-
-const onFinish = (values: loginValues) => {
+const onFinish = async (values: UserRegistration) => {
   console.log('Received values of form: ', values);
+
+  const { username, login, email, phoneNumber, password } = values;
+
+  try {
+    await signup({ username, login, email, phoneNumber, password });
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 const SignupPage = () => {
@@ -94,10 +99,10 @@ const SignupPage = () => {
         </Form.Item>
 
         <Form.Item
-          name="phone"
+          name="phoneNumber"
           rules={[
             { required: true, message: 'Введите номер телефона' },
-            { pattern: /^(\+7|8)?[\d]{10}$/, message: 'Введите корректный номер телефона' },
+            { pattern: /^(\+7)?[\d]{10}$/, message: 'Введите корректный номер телефона через +7' },
           ]}
           normalize={normalizePhone}
           getValueFromEvent={(e) => {

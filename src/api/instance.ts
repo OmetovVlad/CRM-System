@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { tokenManager } from '../utils/TokenManager.ts';
 
 const BASE_URL = 'https://easydev.club/api/v1';
 
@@ -8,10 +9,10 @@ export const instance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// instance.interceptors.request.use((config) => {
-//   config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
-//   return config;
-// });
+instance.interceptors.request.use((config) => {
+  config.headers.Authorization = `Bearer ${tokenManager.getToken()}`;
+  return config;
+});
 
 // instance.interceptors.response.use(
 //   (config) => {
