@@ -24,6 +24,7 @@ export const NewTask = memo(({ notificationError, updateTaskList }: props) => {
 
     try {
       await createNewTask({ title });
+      form.resetFields();
       updateTaskList();
     } catch (error) {
       const myError = error as Error;

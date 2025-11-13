@@ -39,21 +39,6 @@ const TodoListPage = ({ notificationError }: Props) => {
   }, [filter]);
 
   useEffect(() => {
-    /* Спросить: как лучше писать */
-
-    // (async () => {
-    //   setIsLoading(true);
-    //
-    //   try {
-    //     await fetchData();
-    //   } catch (error) {
-    //     const myError = error as Error;
-    //     errorAlert(myError.message);
-    //   }
-    //
-    //   setIsLoading(false);
-    // })();
-
     const load = async () => {
       setIsLoading(true);
 

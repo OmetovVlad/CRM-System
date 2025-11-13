@@ -10,7 +10,6 @@ import type {
 } from '../types';
 import axios from 'axios';
 import { instance } from './instance.ts';
-import { tokenManager } from '../utils/TokenManager.ts';
 
 export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
   try {
@@ -19,7 +18,7 @@ export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to create new task');
+      throw new Error(e.response?.data || 'Failed to create new task');
     }
 
     throw e;
@@ -35,7 +34,7 @@ export async function getTaskList(filter: Filter): Promise<MetaResponse<Todo, To
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to get tasks');
+      throw new Error(e.response?.data || 'Failed to get tasks');
     }
 
     throw e;
@@ -47,7 +46,7 @@ export async function deleteTask(id: number) {
     await instance.delete(`/todos/${id}`);
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to delete task');
+      throw new Error(e.response?.data || 'Failed to delete task');
     }
     throw e;
   }
@@ -59,7 +58,7 @@ export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to update task');
+      throw new Error(e.response?.data || 'Failed to update task');
     }
     throw e;
   }
@@ -68,30 +67,48 @@ export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
 export async function signin(signinData: AuthData): Promise<Token> {
   try {
     const response = await instance.post(`/auth/signin`, signinData);
-
-    if (response.status === 200) {
-      tokenManager.setToken(response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-    }
-
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to login');
+      console.error(e.response?.data || 'Failed to create new signin');
+      throw new Error(e.response?.data || 'Failed to login');
     }
     throw e;
   }
 }
 
 export async function signup(signupData: UserRegistration) {
-  console.log(signupData);
-
   try {
     const response = await instance.post(`/auth/signup`, signupData);
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to signup');
+      throw new Error(e.response?.data || 'Failed to signup');
+    }
+    throw e;
+  }
+}
+
+export async function profile() {
+  try {
+    const response = await instance.get(`/user/profile`);
+    return response.data;
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      throw new Error(e.response?.data || 'Failed to get profile');
+    }
+    throw e;
+  }
+}
+
+export async function logout() {
+  try {
+    const response = await instance.post(`/user/logout`);
+
+    return response.data;
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      throw new Error(e.response?.data || 'Failed to logout');
     }
     throw e;
   }

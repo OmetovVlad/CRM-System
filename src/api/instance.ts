@@ -9,29 +9,49 @@ export const instance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-instance.interceptors.request.use((config) => {
-  config.headers.Authorization = `Bearer ${tokenManager.getToken()}`;
-  return config;
+instance.interceptors.request.use((request) => {
+  const token = tokenManager.getToken();
+
+  if (token) {
+    request.headers.Authorization = `Bearer ${tokenManager.getToken()}`;
+  }
+
+  return request;
 });
 
-// instance.interceptors.response.use(
-//   (config) => {
-//     return config;
-//   },
-//   async (error) => {
-//     const originalRequest = { ...error.config };
-//     originalRequest._isRetry = true;
-//
-//     if (error.response.status === 401 && error.config && !error.config._isRetry) {
-//       try {
-//         const resp = await instance.get('/auth/refresh');
-//         localStorage.setItem('token', resp.data.accessToken);
-//         return instance.request(originalRequest);
-//       } catch (error) {
-//         console.log('AUTH ERROR:', error);
-//       }
-//     }
-//
-//     throw error;
-//   },
-// );
+instance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes('/auth/refresh') &&
+      !originalRequest.url.includes('/auth/signin')
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        const tokens = await instance.post('/auth/refresh', { refreshToken });
+
+        tokenManager.setToken(tokens.data.accessToken);
+        localStorage.setItem('refreshToken', tokens.data.refreshToken);
+
+        instance.defaults.headers.Authorization = `Bearer ${tokens.data.accessToken}`;
+
+        return instance(originalRequest);
+      } catch (refreshError) {
+        tokenManager.clearToken();
+        localStorage.removeItem('refreshToken');
+
+        window.location.href = '/';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
