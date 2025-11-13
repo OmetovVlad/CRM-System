@@ -9,7 +9,7 @@ interface Props {
   notificationInfo: (message: string) => void;
 }
 
-const ProfilePage = ({ notificationError, notificationInfo }: Props) => {
+const ProfilePage = ({ notificationError }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [profileData, setProfileData] = useState<ProfileRequest>({
