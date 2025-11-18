@@ -1,11 +1,11 @@
 import Title from 'antd/es/typography/Title';
 import { profile } from '../api';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ProfileRequest } from '../types';
 import { Descriptions, Flex, Spin } from 'antd';
 import { useNotification } from '../providers/NotificationProvider.tsx';
 
-const ProfilePage = memo(() => {
+const ProfilePage = () => {
   const {notificationError} = useNotification();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -70,6 +70,6 @@ const ProfilePage = memo(() => {
       )}
     </>
   );
-});
+};
 
 export default ProfilePage;
