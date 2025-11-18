@@ -3,13 +3,13 @@ import { tokenManager } from '../utils/TokenManager.ts';
 
 const BASE_URL = 'https://easydev.club/api/v1';
 
-export const instance = axios.create({
+export const apiInstance = axios.create({
   withCredentials: true,
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
-instance.interceptors.request.use((request) => {
+apiInstance.interceptors.request.use((request) => {
   const token = tokenManager.getToken();
 
   if (token) {
@@ -19,7 +19,7 @@ instance.interceptors.request.use((request) => {
   return request;
 });
 
-instance.interceptors.response.use(
+apiInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
@@ -35,14 +35,14 @@ instance.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken');
 
-        const tokens = await instance.post('/auth/refresh', { refreshToken });
+        const tokens = await apiInstance.post('/auth/refresh', { refreshToken });
 
         tokenManager.setToken(tokens.data.accessToken);
         localStorage.setItem('refreshToken', tokens.data.refreshToken);
 
-        instance.defaults.headers.Authorization = `Bearer ${tokens.data.accessToken}`;
+        apiInstance.defaults.headers.Authorization = `Bearer ${tokens.data.accessToken}`;
 
-        return instance(originalRequest);
+        return apiInstance(originalRequest);
       } catch (refreshError) {
         tokenManager.clearToken();
         localStorage.removeItem('refreshToken');

@@ -1,15 +1,12 @@
 import Title from 'antd/es/typography/Title';
 import { profile } from '../api';
-import { useCallback, useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import type { ProfileRequest } from '../types';
 import { Descriptions, Flex, Spin } from 'antd';
+import { useNotification } from '../providers/NotificationProvider.tsx';
 
-interface Props {
-  notificationError: (message: string) => void;
-  notificationInfo: (message: string) => void;
-}
-
-const ProfilePage = ({ notificationError }: Props) => {
+const ProfilePage = memo(() => {
+  const {notificationError} = useNotification();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [profileData, setProfileData] = useState<ProfileRequest>({
@@ -73,6 +70,6 @@ const ProfilePage = ({ notificationError }: Props) => {
       )}
     </>
   );
-};
+});
 
 export default ProfilePage;

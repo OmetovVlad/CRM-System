@@ -2,30 +2,18 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import TodoListPage from './pages/TodoListPage.tsx';
 import { MainLayout } from './components/MainLayout';
 import ProfilePage from './pages/ProfilePage.tsx';
-import { ConfigProvider, notification } from 'antd';
 import { AuthLayout } from './components/AuthLayout';
 import SigninPage from './pages/SigninPage.tsx';
 import SignupPage from './pages/SignupPage.tsx';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicRoute } from './components/PublicRoute';
+import { ConfigProvider } from 'antd';
+import { NotificationProvider } from './providers/NotificationProvider.tsx';
 
 function App() {
-  const [api, contextHolder] = notification.useNotification();
-
-  const notificationError = (message: string) => {
-    api.error({
-      message: message,
-    });
-  };
-
-  const notificationInfo = (message: string) => {
-    api.info({
-      message: message,
-    });
-  };
 
   return (
-    <>
+    <NotificationProvider>
       <ConfigProvider
         theme={{
           components: {
@@ -40,21 +28,15 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <MainLayout
-                  notificationError={notificationError}
-                  notificationInfo={notificationInfo}
-                />
+                <MainLayout />
               </ProtectedRoute>
             }
           >
-            <Route index element={<TodoListPage notificationError={notificationError} />} />
+            <Route index element={<TodoListPage />} />
             <Route
               path="profile"
               element={
-                <ProfilePage
-                  notificationError={notificationError}
-                  notificationInfo={notificationInfo}
-                />
+                <ProfilePage />
               }
             />
           </Route>
@@ -71,26 +53,19 @@ function App() {
             <Route
               path="signin"
               element={
-                <SigninPage
-                  notificationError={notificationError}
-                  notificationInfo={notificationInfo}
-                />
+                <SigninPage />
               }
             />
             <Route
               path="signup"
               element={
-                <SignupPage
-                  notificationError={notificationError}
-                  notificationInfo={notificationInfo}
-                />
+                <SignupPage />
               }
             />
           </Route>
         </Routes>
-        {contextHolder}
       </ConfigProvider>
-    </>
+    </NotificationProvider>
   );
 }
 

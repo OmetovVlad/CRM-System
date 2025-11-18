@@ -7,13 +7,10 @@ import { logout } from '../../api';
 import { exit } from '../../store/reducers/AuthSlice.ts';
 import { tokenManager } from '../../utils/TokenManager.ts';
 import { useAppDispatch } from '../../hooks/redux.ts';
+import { useNotification } from '../../providers/NotificationProvider.tsx';
 
-interface Props {
-  notificationError: (message: string) => void;
-  notificationInfo: (message: string) => void;
-}
-
-export const MainLayout = ({ notificationError, notificationInfo }: Props) => {
+export const MainLayout = () => {
+  const {notificationSuccess, notificationError} = useNotification();
   type MenuItem = Required<MenuProps>['items'][number];
 
   const {
@@ -26,7 +23,7 @@ export const MainLayout = ({ notificationError, notificationInfo }: Props) => {
     try {
       await logout();
 
-      notificationInfo('Вы вышли из системы');
+      notificationSuccess('Вы вышли из системы');
 
       tokenManager.clearToken();
       localStorage.removeItem('refreshToken');

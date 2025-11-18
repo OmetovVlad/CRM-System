@@ -4,18 +4,16 @@ import { Flex } from 'antd';
 
 type Props = {
   tasksList: Todo[];
-  notificationError: (message: string) => void;
   updateTaskList: () => void;
 };
 
-export const TasksList = ({ tasksList, notificationError, updateTaskList }: Props) => {
+export const TasksList = ({ tasksList, updateTaskList }: Props) => {
   return (
     <Flex gap="middle" vertical>
       {tasksList.map((task) => (
         <TaskItem
           key={task.id}
           task={task}
-          notificationError={notificationError}
           updateTaskList={updateTaskList}
         />
       ))}

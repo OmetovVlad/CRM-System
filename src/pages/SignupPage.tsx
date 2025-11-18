@@ -4,13 +4,10 @@ import { Link } from 'react-router-dom';
 import type { UserRegistration } from '../types';
 import { signup } from '../api';
 import { useState } from 'react';
+import { useNotification } from '../providers/NotificationProvider.tsx';
 
-interface Props {
-  notificationError: (message: string) => void;
-  notificationInfo: (message: string) => void;
-}
-
-const SignupPage = ({ notificationError, notificationInfo }: Props) => {
+const SignupPage = () => {
+  const { notificationSuccess, notificationError } = useNotification();
   const [isSending, setIsSending] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -34,7 +31,7 @@ const SignupPage = ({ notificationError, notificationInfo }: Props) => {
 
     try {
       await signup({ username, login, email, phoneNumber, password });
-      notificationInfo('Аккаунт успешно создан');
+      notificationSuccess('Аккаунт успешно создан');
       setErrorMessage('');
       setIsSuccess(true);
     } catch (error) {

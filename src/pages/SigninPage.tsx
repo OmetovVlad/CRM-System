@@ -7,13 +7,11 @@ import { useState } from 'react';
 import { tokenManager } from '../utils/TokenManager.ts';
 import { useAppDispatch } from '../hooks/redux.ts';
 import { login } from '../store/reducers/AuthSlice.ts';
+import { useNotification } from '../providers/NotificationProvider.tsx';
 
-interface Props {
-  notificationError: (message: string) => void;
-  notificationInfo: (message: string) => void;
-}
+const SigninPage = () => {
+  const {notificationSuccess, notificationError} = useNotification();
 
-const SigninPage = ({ notificationError, notificationInfo }: Props) => {
   const [isSending, setIsSending] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
@@ -25,7 +23,7 @@ const SigninPage = ({ notificationError, notificationInfo }: Props) => {
     try {
       const signinData = await signin(values);
 
-      notificationInfo('Вы успешно вошли в систему');
+      notificationSuccess('Вы успешно вошли в систему');
       setErrorMessage('');
 
       tokenManager.setToken(signinData.accessToken);
