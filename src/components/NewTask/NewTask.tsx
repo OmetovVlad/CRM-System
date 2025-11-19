@@ -5,15 +5,16 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Flex, Form, Input } from 'antd';
 import { useForm } from 'antd/es/form/Form';
 import type { Todo } from '../../types';
+import { useNotification } from '../../providers/NotificationProvider.tsx';
 
 type props = {
-  notificationError: (message: string) => void;
   updateTaskList: () => void;
 };
 
 type CreateTodoRequest = Pick<Todo, 'title'>;
 
-export const NewTask = memo(({ notificationError, updateTaskList }: props) => {
+export const NewTask = memo(({ updateTaskList }: props) => {
+  const {notificationError} = useNotification();
   const TITLE_MIN = Number(import.meta.env.VITE_TITLE_MIN);
   const TITLE_MAX = Number(import.meta.env.VITE_TITLE_MAX);
 
@@ -24,6 +25,7 @@ export const NewTask = memo(({ notificationError, updateTaskList }: props) => {
 
     try {
       await createNewTask({ title });
+      form.resetFields();
       updateTaskList();
     } catch (error) {
       const myError = error as Error;

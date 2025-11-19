@@ -6,14 +6,15 @@ import { Checkbox } from '../../ui/Checkbox';
 import { CheckOutlined, CloseOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Flex, Form, Input, Space } from 'antd';
 import { useForm } from 'antd/es/form/Form';
+import { useNotification } from '../../providers/NotificationProvider.tsx';
 
 interface TaskItemProps {
   task: Todo;
-  notificationError: (message: string) => void;
   updateTaskList: () => void;
 }
 
-export const TaskItem = ({ task, notificationError, updateTaskList }: TaskItemProps) => {
+export const TaskItem = ({ task, updateTaskList }: TaskItemProps) => {
+  const {notificationError} = useNotification();
   const TITLE_MIN = Number(import.meta.env.VITE_TITLE_MIN);
   const TITLE_MAX = Number(import.meta.env.VITE_TITLE_MAX);
 

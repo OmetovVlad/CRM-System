@@ -1,56 +1,99 @@
-import type { MetaResponse, Todo, TodoInfo, TodoRequest, Filter } from '../types';
-import axios from 'axios';
-import { api } from './instance.ts';
+import type {
+  MetaResponse,
+  Todo,
+  TodoInfo,
+  TodoRequest,
+  Filter,
+  AuthData,
+  UserRegistration,
+  Token,
+} from '../types';
+import { apiInstance } from './apiInstance.ts';
+
+function errorHandler(e: unknown): string {
+  if ( e && typeof e === 'object') {
+    const error = e as { response: {data?: string } };
+
+    if (error.response?.data) {
+      return error.response.data;
+    }
+  }
+
+  return 'Unknown error';
+}
 
 export async function createNewTask(todoRequest: TodoRequest): Promise<Todo> {
   try {
-    const response = await api.post<Todo>(`/todos`, todoRequest);
+    const response = await apiInstance.post<Todo>(`/todos`, todoRequest);
 
     return response.data;
   } catch (e) {
-    if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to create new task');
-    }
-
-    throw e;
+    throw new Error(errorHandler(e));
   }
 }
 
 export async function getTaskList(filter: Filter): Promise<MetaResponse<Todo, TodoInfo>> {
   try {
-    const response = await api.get<MetaResponse<Todo, TodoInfo>>('/todos', {
+    const response = await apiInstance.get<MetaResponse<Todo, TodoInfo>>('/todos', {
       params: { filter },
     });
 
     return response.data;
   } catch (e) {
-    if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to get tasks');
-    }
-
-    throw e;
+    throw new Error(errorHandler(e));
   }
 }
 
 export async function deleteTask(id: number) {
   try {
-    await api.delete(`/todos/${id}`);
+    await apiInstance.delete(`/todos/${id}`);
   } catch (e) {
-    if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to delete task');
-    }
-    throw e;
+    throw new Error(errorHandler(e));
   }
 }
 
 export async function updateTask(id: number, todo: TodoRequest): Promise<Todo> {
   try {
-    const response = await api.put(`/todos/${id}`, todo);
+    const response = await apiInstance.put(`/todos/${id}`, todo);
     return response.data;
   } catch (e) {
-    if (axios.isAxiosError(e)) {
-      throw new Error(e.response?.data?.message || 'Failed to update task');
-    }
-    throw e;
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function signin(signinData: AuthData): Promise<Token> {
+  try {
+    const response = await apiInstance.post(`/auth/signin`, signinData);
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function signup(signupData: UserRegistration) {
+  try {
+    const response = await apiInstance.post(`/auth/signup`, signupData);
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function profile() {
+  try {
+    const response = await apiInstance.get(`/user/profile`);
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function logout() {
+  try {
+    const response = await apiInstance.post(`/user/logout`);
+
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
   }
 }

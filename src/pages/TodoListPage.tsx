@@ -5,12 +5,10 @@ import { TaskFilter } from '../components/TaskFilter';
 import type { Filter, Todo, TodoInfo } from '../types';
 import { Empty, Flex, Spin } from 'antd';
 import { NewTask } from '../components/NewTask';
+import { useNotification } from '../providers/NotificationProvider.tsx';
 
-interface Props {
-  notificationError: (message: string) => void;
-}
-
-const TodoListPage = ({ notificationError }: Props) => {
+const TodoListPage = () => {
+  const { notificationError } = useNotification();
   const [tasksList, setTasksList] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filter, setFilter] = useState<Filter>('all');
@@ -39,21 +37,6 @@ const TodoListPage = ({ notificationError }: Props) => {
   }, [filter]);
 
   useEffect(() => {
-    /* Спросить: как лучше писать */
-
-    // (async () => {
-    //   setIsLoading(true);
-    //
-    //   try {
-    //     await fetchData();
-    //   } catch (error) {
-    //     const myError = error as Error;
-    //     errorAlert(myError.message);
-    //   }
-    //
-    //   setIsLoading(false);
-    // })();
-
     const load = async () => {
       setIsLoading(true);
 
@@ -80,7 +63,7 @@ const TodoListPage = ({ notificationError }: Props) => {
 
   return (
     <>
-      <NewTask notificationError={notificationError} updateTaskList={fetchData} />
+      <NewTask updateTaskList={fetchData} />
       {isLoading && (
         <Flex align={'center'} justify={'center'} style={{ margin: '2em 0' }}>
           <Spin size="large" />
@@ -92,7 +75,6 @@ const TodoListPage = ({ notificationError }: Props) => {
           {!!tasksList.length && (
             <TasksList
               tasksList={tasksList}
-              notificationError={notificationError}
               updateTaskList={fetchData}
             />
           )}

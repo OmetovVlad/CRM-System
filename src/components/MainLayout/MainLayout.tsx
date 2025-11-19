@@ -2,24 +2,58 @@ import { Link, Outlet } from 'react-router-dom';
 import { Layout, Menu, type MenuProps, theme } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 import { Content } from 'antd/es/layout/layout';
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-const items: MenuItem[] = [
-  {
-    key: '/',
-    label: <Link to={'/'}>список задач</Link>,
-  },
-  {
-    key: '/profile',
-    label: <Link to={'/profile'}>профиль</Link>,
-  },
-];
+import { LogoutOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
+import { logout } from '../../api';
+import { exit } from '../../store/reducers/AuthSlice.ts';
+import { tokenManager } from '../../utils/TokenManager.ts';
+import { useAppDispatch } from '../../hooks/redux.ts';
+import { useNotification } from '../../providers/NotificationProvider.tsx';
 
 export const MainLayout = () => {
+  const {notificationSuccess, notificationError} = useNotification();
+  type MenuItem = Required<MenuProps>['items'][number];
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const dispatch = useAppDispatch();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+
+      notificationSuccess('Вы вышли из системы');
+
+      tokenManager.clearToken();
+      localStorage.removeItem('refreshToken');
+      dispatch(exit());
+    } catch (error) {
+      const myError = error as Error;
+      notificationError(myError.message);
+    }
+  };
+
+  const items: MenuItem[] = [
+    {
+      key: '/',
+      icon: <UnorderedListOutlined />,
+      label: <Link to={'/'}>список задач</Link>,
+    },
+    {
+      key: '/profile',
+      icon: <UserOutlined />,
+      label: <Link to={'/profile'}>профиль</Link>,
+    },
+    {
+      danger: true,
+      key: '/user/logout',
+      icon: <LogoutOutlined />,
+      label: 'Выйти',
+      onClick: handleLogout,
+      style: { marginTop: 'auto' },
+    },
+  ];
 
   const siderStyle: React.CSSProperties = {
     overflow: 'auto',
@@ -40,6 +74,11 @@ export const MainLayout = () => {
           defaultSelectedKeys={[location.pathname]}
           mode="inline"
           items={items}
+          style={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
         />
       </Sider>
       <Layout>
