@@ -2,14 +2,18 @@ import { Link, Outlet } from 'react-router-dom';
 import { Layout, Menu, type MenuProps, theme } from 'antd';
 import Sider from 'antd/es/layout/Sider';
 import { Content } from 'antd/es/layout/layout';
-import { LogoutOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
+import { LogoutOutlined, TeamOutlined, UnorderedListOutlined, UserOutlined } from '@ant-design/icons';
 import { logout } from '../../api';
-import { exit } from '../../store/reducers/AuthSlice.ts';
+import { exit, fetchProfileData, setRoles } from '../../store/reducers/AuthSlice.ts';
 import { tokenManager } from '../../utils/TokenManager.ts';
-import { useAppDispatch } from '../../hooks/redux.ts';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux.ts';
 import { useNotification } from '../../providers/NotificationProvider.tsx';
+import type { RootState } from '../../store';
+import { useEffect } from 'react';
+import { RolesValues } from '../../types';
 
 export const MainLayout = () => {
+  const {roles, isLoggedIn}  = useAppSelector((state: RootState) => state.auth);
   const {notificationSuccess, notificationError} = useNotification();
   type MenuItem = Required<MenuProps>['items'][number];
 
@@ -18,6 +22,12 @@ export const MainLayout = () => {
   } = theme.useToken();
 
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (isLoggedIn && roles.length === 0) {
+      dispatch(fetchProfileData());
+    }
+  }, [dispatch]);
 
   const handleLogout = async () => {
     try {
@@ -28,6 +38,7 @@ export const MainLayout = () => {
       tokenManager.clearToken();
       localStorage.removeItem('refreshToken');
       dispatch(exit());
+      dispatch(setRoles([]));
     } catch (error) {
       const myError = error as Error;
       notificationError(myError.message);
@@ -45,6 +56,15 @@ export const MainLayout = () => {
       icon: <UserOutlined />,
       label: <Link to={'/profile'}>профиль</Link>,
     },
+
+    ...(roles.includes(RolesValues.ADMIN) || roles.includes(RolesValues.MODERATOR) ? [
+      {
+        key: '/users',
+        icon: <TeamOutlined />,
+        label: <Link to={'/users'}>Пользователи</Link>,
+      }
+    ] : []),
+
     {
       danger: true,
       key: '/user/logout',

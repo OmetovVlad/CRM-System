@@ -9,6 +9,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicRoute } from './components/PublicRoute';
 import { ConfigProvider } from 'antd';
 import { NotificationProvider } from './providers/NotificationProvider.tsx';
+import UsersPage from './pages/UsersPage.tsx';
 
 function App() {
 
@@ -37,6 +38,12 @@ function App() {
               path="profile"
               element={
                 <ProfilePage />
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <UsersPage />
               }
             />
           </Route>
