@@ -2,6 +2,7 @@ import axios from 'axios';
 import { tokenManager } from '../utils/TokenManager.ts';
 
 const BASE_URL = 'https://easydev.club/api/v1';
+let refreshingToken: Promise<string> | null = null;
 
 export const apiInstance = axios.create({
   withCredentials: true,
@@ -20,38 +21,42 @@ apiInstance.interceptors.request.use((request) => {
 });
 
 apiInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  response => response,
+  async error => {
     const originalRequest = error.config;
 
     if (
-      error.response.status === 401 &&
+      error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url.includes('/auth/refresh') &&
       !originalRequest.url.includes('/auth/signin')
     ) {
       originalRequest._retry = true;
 
-      try {
+      if (!refreshingToken) {
         const refreshToken = localStorage.getItem('refreshToken');
-
-        const tokens = await apiInstance.post('/auth/refresh', { refreshToken });
-
-        tokenManager.setToken(tokens.data.accessToken);
-        localStorage.setItem('refreshToken', tokens.data.refreshToken);
-
-        apiInstance.defaults.headers.Authorization = `Bearer ${tokens.data.accessToken}`;
-
-        return apiInstance(originalRequest);
-      } catch (refreshError) {
-        tokenManager.clearToken();
-        localStorage.removeItem('refreshToken');
-
-        window.location.href = '/';
-        return Promise.reject(refreshError);
+        refreshingToken = apiInstance.post('/auth/refresh', { refreshToken })
+          .then(({ data }) => {
+            tokenManager.setToken(data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            apiInstance.defaults.headers.Authorization = `Bearer ${data.accessToken}`;
+            return data.accessToken;
+          })
+          .catch(err => {
+            tokenManager.clearToken();
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/';
+            throw err;
+          })
+          .finally(() => { refreshingToken = null; });
       }
+
+      const newToken = await refreshingToken;
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      return apiInstance(originalRequest);
     }
 
     return Promise.reject(error);
-  },
+  }
 );
+

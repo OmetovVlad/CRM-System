@@ -1,12 +1,15 @@
-import type {
-  MetaResponse,
-  Todo,
-  TodoInfo,
-  TodoRequest,
-  Filter,
-  AuthData,
-  UserRegistration,
-  Token,
+import {
+  type MetaResponse,
+  type Todo,
+  type TodoInfo,
+  type TodoRequest,
+  type Filter,
+  type AuthData,
+  type UserRegistration,
+  type Token,
+  type UserFilters,
+  type Role,
+  type ProfileRequest,
 } from '../types';
 import { apiInstance } from './apiInstance.ts';
 
@@ -88,9 +91,86 @@ export async function profile() {
   }
 }
 
+export async function updateProfile(userId: number | string, data: ProfileRequest) {
+  try {
+    const response = await apiInstance.put(`/admin/users/${userId}`, data);
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function profileById(userId: number | string) {
+  try {
+    const response = await apiInstance.get(`/admin/users/${userId}`);
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
 export async function logout() {
   try {
     const response = await apiInstance.post(`/user/logout`);
+
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function adminUsers(UserFilters: UserFilters) {
+  try {
+    const response = await apiInstance.get(`/admin/users`, {
+      params: {
+        search: UserFilters.search,
+        page: UserFilters.page,
+        limit: UserFilters.limit,
+        sortBy: UserFilters.sortBy,
+        sortOrder: UserFilters.sortOrder,
+        isBlocked: UserFilters.isBlocked,
+      }
+    });
+
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function adminDeleteUser(userId: number) {
+  try {
+    const response = await apiInstance.delete(`/admin/users/${userId}`);
+
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function adminBlockUser(userId: number) {
+  try {
+    const response = await apiInstance.post(`/admin/users/${userId}/block`);
+
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function adminUnblockUser(userId: number) {
+  try {
+    const response = await apiInstance.post(`/admin/users/${userId}/unblock`);
+
+    return response.data;
+  } catch (e) {
+    throw new Error(errorHandler(e));
+  }
+}
+
+export async function adminUpdateRights(userId: number, roles: Role[]) {
+  try {
+    const response = await apiInstance.post(`/admin/users/${userId}/rights`, { roles: roles });
 
     return response.data;
   } catch (e) {

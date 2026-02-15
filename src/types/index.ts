@@ -15,5 +15,16 @@ export type {
   Profile,
   RefreshToken,
   ProfileRequest,
-  PasswordRequest
-} from './auth.ts'
+  PasswordRequest,
+} from './auth.ts';
+
+export type {
+  AdminMetaResponse,
+  Admin,
+  UserFilters,
+  UserRequest,
+  UserRolesRequest,
+} from './admin.ts';
+
+export { Role as RolesValues } from './auth.ts';
+

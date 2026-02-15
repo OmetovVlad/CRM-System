@@ -9,59 +9,25 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicRoute } from './components/PublicRoute';
 import { ConfigProvider } from 'antd';
 import { NotificationProvider } from './providers/NotificationProvider.tsx';
+import UsersPage from './pages/UsersPage.tsx';
 
 function App() {
 
   return (
     <NotificationProvider>
-      <ConfigProvider
-        theme={{
-          components: {
-            Form: {
-              // itemMarginBottom: 0,
-            },
-          },
-        }}
-      >
+      <ConfigProvider>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }
-          >
+          <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
             <Route index element={<TodoListPage />} />
-            <Route
-              path="profile"
-              element={
-                <ProfilePage />
-              }
-            />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/:id" element={<ProfilePage />} />
+            <Route path="users" element={<UsersPage />} />
           </Route>
 
-          <Route
-            path="/auth"
-            element={
-              <PublicRoute>
-                <AuthLayout />
-              </PublicRoute>
-            }
-          >
+          <Route path="/auth" element={<PublicRoute><AuthLayout /></PublicRoute>} >
             <Route index element={<Navigate to="signin" replace />} />
-            <Route
-              path="signin"
-              element={
-                <SigninPage />
-              }
-            />
-            <Route
-              path="signup"
-              element={
-                <SignupPage />
-              }
-            />
+            <Route path="signin" element={<SigninPage />} />
+            <Route path="signup" element={<SignupPage />} />
           </Route>
         </Routes>
       </ConfigProvider>

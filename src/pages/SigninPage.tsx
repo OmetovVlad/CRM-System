@@ -1,12 +1,12 @@
 import { Alert, Button, Card, Form, Input } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { signin } from '../api';
+import { profile, signin } from '../api';
 import type { AuthData } from '../types';
 import { useState } from 'react';
 import { tokenManager } from '../utils/TokenManager.ts';
 import { useAppDispatch } from '../hooks/redux.ts';
-import { login } from '../store/reducers/AuthSlice.ts';
+import { login, setRoles } from '../store/reducers/AuthSlice.ts';
 import { useNotification } from '../providers/NotificationProvider.tsx';
 
 const SigninPage = () => {
@@ -29,13 +29,17 @@ const SigninPage = () => {
       tokenManager.setToken(signinData.accessToken);
       localStorage.setItem('refreshToken', signinData.refreshToken);
       dispatch(login());
+
+      const userData = await profile();
+      const userRoles = userData.roles;
+      dispatch(setRoles(userRoles))
     } catch (error) {
       const myError = error as Error;
       notificationError(myError.message);
       setErrorMessage(myError.message);
+    } finally {
+      setIsSending(false);
     }
-
-    setIsSending(false);
   };
 
   return (
