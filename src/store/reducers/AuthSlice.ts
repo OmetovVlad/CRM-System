@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Roles } from '../../types';
+import type { RolesValues } from '../../types';
 import { profile } from '../../api';
 
 interface AuthState {
   isLoggedIn: boolean;
-  roles: Roles[];
+  roles: RolesValues[];
 }
 
 const getInitialLoggedIn = (): boolean => {
@@ -17,10 +17,13 @@ const initialAuthState: AuthState = {
   roles: []
 };
 
-export const fetchProfileData = createAsyncThunk('auth/fetchProfileData', async (): Promise<Roles[]> => {
-  const response = await profile();
-  return response.roles;
-});
+export const fetchProfileData = createAsyncThunk(
+  'auth/fetchProfileData',
+  async (): Promise<RolesValues[]> => {
+    const response = await profile();
+    return response.roles;
+  },
+);
 
 const authSlice = createSlice({
   name: 'auth',
@@ -35,16 +38,15 @@ const authSlice = createSlice({
     setAuth: (state: AuthState, action: PayloadAction<boolean>) => {
       state.isLoggedIn = action.payload;
     },
-    setRoles: (state: AuthState, action: PayloadAction<Roles[]>) => {
+    setRoles: (state: AuthState, action: PayloadAction<RolesValues[]>) => {
       state.roles = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchProfileData.fulfilled, (state, action) => {
-        state.roles = action.payload as Roles[];
-      })
-  }
+    builder.addCase(fetchProfileData.fulfilled, (state, action) => {
+      state.roles = action.payload as RolesValues[];
+    });
+  },
 });
 
 export const { login, exit, setAuth, setRoles } = authSlice.actions;
