@@ -26,9 +26,9 @@ export interface Profile {
 }
 
 export interface ProfileRequest {
-  username: string;
-  email: string;
-  phoneNumber: string;
+  username?: string;
+  email?: string;
+  phoneNumber?: string;
 }
 
 export interface PasswordRequest {

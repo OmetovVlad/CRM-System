@@ -21,13 +21,10 @@ export type {
 export type {
   AdminMetaResponse,
   Admin,
-  Roles,
   UserFilters,
   UserRequest,
   UserRolesRequest,
 } from './admin.ts';
 
-export {
-  Roles as RolesValues
-} from './admin.ts'
+export { Role as RolesValues } from './auth.ts';
 

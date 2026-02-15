@@ -1,4 +1,6 @@
 // Интерфейс запроса для фильтрации и сортировки пользователей
+import { Role } from './auth.ts';
+
 export interface UserFilters {
   search?: string;
   sortBy?: string;
@@ -15,7 +17,7 @@ export interface Admin {
   email: string;
   date: string; // ISO date string
   isBlocked: boolean;
-  roles: Roles[];
+  roles: Role[];
   phoneNumber: string;
 }
 // Интерфейс метаинформации
@@ -30,7 +32,7 @@ export interface AdminMetaResponse<T> {
 }
 // Интерфейс для обновления прав пользователя
 export interface UserRolesRequest {
-  roles: Roles []
+  roles: Role[];
 }
 
 // Интерфейс для обновления данных пользователя
@@ -38,10 +40,4 @@ export interface UserRequest{
   username?: string;
   email?: string;
   phoneNumber?: string;
-}
-
-export enum Roles {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-  MODERATOR = 'MODERATOR',
 }

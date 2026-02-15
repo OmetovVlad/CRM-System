@@ -1,14 +1,28 @@
 import Title from 'antd/es/typography/Title';
-import { adminBlockUser, adminDeleteUser, adminUnblockUser, adminUsers } from '../api';
+import {
+  adminBlockUser,
+  adminDeleteUser,
+  adminUnblockUser,
+  adminUpdateRights,
+  adminUsers,
+} from '../api';
 import { useCallback, useEffect, useState } from 'react';
 import { type Profile, RolesValues, type UserFilters } from '../types';
 import {
   Button,
-  type CheckboxChangeEvent, Dropdown,
+  type CheckboxChangeEvent,
+  Col,
+  Drawer,
+  Dropdown,
   Flex,
   Form,
-  Input, Popconfirm,
+  Input,
+  notification,
+  Popconfirm,
   Radio,
+  Row,
+  Select,
+  type SelectProps,
   Spin,
   Table,
   type TableProps,
@@ -27,6 +41,10 @@ import {
 import { useAppSelector } from '../hooks/redux.ts';
 import type { RootState } from '../store';
 import type { ItemType } from 'antd/es/menu/interface';
+
+type RolesFormValues = {
+  roles: RolesValues[];
+};
 
 const FILTER_DATA: UserFilters = {
   search: undefined,
@@ -59,12 +77,17 @@ const UsersPage = () => {
   const isAdmin = roles.includes(RolesValues.ADMIN);
 
   const {notificationError} = useNotification();
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [users, setUsers] = useState<Profile[]>([]);
   const [total, setTotal] = useState(0);
   const [filter, setFilter] = useState<UserFilters>(FILTER_DATA)
 
+  const [isOpenDrawer, setIsOpenDrawer] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<null | Profile>(null);
+
   const [form] = Form.useForm<{ search: string }>();
+  const [rolesForm] = Form.useForm<RolesFormValues>();
   const searchValue = Form.useWatch('search', form);
   const debouncedSearch = useDebounce(searchValue);
 
@@ -101,6 +124,14 @@ const UsersPage = () => {
     }));
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    if (!currentUser)  return;
+
+    rolesForm.setFieldsValue({
+      roles: currentUser.roles,
+    });
+  }, [currentUser, rolesForm]);
+
   const updateUserStatus = useCallback(async (id: number, action: "block" | "unblock" | "delete" ) => {
     try {
       if (action === "block") {
@@ -123,14 +154,36 @@ const UsersPage = () => {
     }
   }, [])
 
+  const openDrawerRoles = (profile: Profile) => {
+    setIsOpenDrawer(true);
+    setCurrentUser(profile);
+  };
+
   const columns: ColumnsType<Profile> = [
+    {
+      key: 'profile',
+      fixed: undefined,
+      render: (_, profile) => {
+        return (
+          <Button
+            href={`/profile/${profile.id}`}
+            target="_blank"
+            type="primary"
+            icon={<UserOutlined />}
+            variant="filled"
+            color="default"
+          />
+        );
+      },
+    },
     {
       title: 'Имя',
       dataIndex: 'username',
       key: 'username',
       fixed: filter.sortBy === 'username' ? 'left' : undefined,
       sorter: true,
-      sortOrder: filter.sortBy === 'username' ? ( filter.sortOrder === 'asc' ? 'ascend' : 'descend' ) : null
+      sortOrder:
+        filter.sortBy === 'username' ? (filter.sortOrder === 'asc' ? 'ascend' : 'descend') : null,
     },
     {
       title: 'Email',
@@ -138,28 +191,28 @@ const UsersPage = () => {
       key: 'email',
       fixed: filter.sortBy === 'email' ? 'left' : undefined,
       sorter: true,
-      sortOrder: filter.sortBy === 'email' ? ( filter.sortOrder === 'asc' ? 'ascend' : 'descend' ) : null
+      sortOrder:
+        filter.sortBy === 'email' ? (filter.sortOrder === 'asc' ? 'ascend' : 'descend') : null,
     },
     {
       title: 'Зарегистрирован',
       dataIndex: 'date',
       key: 'date',
-      render: (dateString: Profile['date']) => new Date(dateString).toLocaleDateString('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
+      render: (dateString: Profile['date']) =>
+        new Date(dateString).toLocaleDateString('ru-RU', {
+          year: 'numeric',
+          month: 'long',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
     },
     {
       title: 'Статус',
       dataIndex: 'isBlocked',
       key: 'isBlocked',
       render: (isBlocked: Profile['isBlocked']) => (
-        <Tag color={isBlocked ? 'red' : 'green'}>
-          {isBlocked ? 'Заблокирован' : 'Активен'}
-        </Tag>
+        <Tag color={isBlocked ? 'red' : 'green'}>{isBlocked ? 'Заблокирован' : 'Активен'}</Tag>
       ),
     },
     {
@@ -192,7 +245,6 @@ const UsersPage = () => {
       key: 'operation',
       fixed: 'right',
       render: (_, profile) => {
-
         const items = [
           {
             key: '0',
@@ -206,65 +258,85 @@ const UsersPage = () => {
             label: 'Перейти к профилю',
             icon: <UserOutlined />,
             key: '1',
+            onClick: () => {
+              window.open(`/profile/${profile.id}`, '_blank');
+            },
           },
-          {
-            label: 'Управление ролями',
-            icon: <SafetyCertificateOutlined />,
-            key: '2',
-          },
-          profile.isBlocked ? {
-            label:
-              <div onClick={e => e.stopPropagation()}>
-                <Popconfirm
-                  title="Разблокировать пользователя?"
-                  okText="Разблокировать"
-                  cancelText="Отмена"
-                  onConfirm={() => updateUserStatus(profile.id, 'unblock')}
-                >
-                  <span style={{ color: '#389e0d'}}>Разблокировать</span>
-                </Popconfirm>
-              </div>,
-            icon:  <UnlockOutlined  style={{ color: '#389e0d' }} />,
-            key: '3',
-          } : null,
-          !profile.isBlocked ? {
-            label:
-              <div onClick={e => e.stopPropagation()}>
-                <Popconfirm
-                  title="Заблокировать пользователя?"
-                  okText="Заблокировать"
-                  cancelText="Отмена"
-                  onConfirm={() => updateUserStatus(profile.id, 'block')}
-                >
-                  <span style={{ color: '#ff4d4f'}}>Заблокировать</span>
-                </Popconfirm>
-              </div>,
-            icon: <LockOutlined  style={{ color: '#ff4d4f' }} />,
-            key: '3',
-          } : null,
-          {
+          isAdmin
+            ? {
+                label: 'Управление ролями',
+                icon: <SafetyCertificateOutlined />,
+                key: '2',
+                onClick: () => openDrawerRoles(profile),
+              }
+            : null,
+          profile.isBlocked
+            ? {
+                label: (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Popconfirm
+                      title="Разблокировать пользователя?"
+                      okText="Разблокировать"
+                      cancelText="Отмена"
+                      onConfirm={() => updateUserStatus(profile.id, 'unblock')}
+                    >
+                      <span style={{ color: '#389e0d' }}>Разблокировать</span>
+                    </Popconfirm>
+                  </div>
+                ),
+                icon: <UnlockOutlined style={{ color: '#389e0d' }} />,
+                key: '3',
+              }
+            : null,
+          !profile.isBlocked
+            ? {
+                label: (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Popconfirm
+                      title="Заблокировать пользователя?"
+                      okText="Заблокировать"
+                      cancelText="Отмена"
+                      onConfirm={() => updateUserStatus(profile.id, 'block')}
+                    >
+                      <span style={{ color: '#ff4d4f' }}>Заблокировать</span>
+                    </Popconfirm>
+                  </div>
+                ),
+                icon: <LockOutlined style={{ color: '#ff4d4f' }} />,
+                key: '3',
+              }
+            : null,
+          isAdmin
+            ? {
             type: 'divider',
-          },
-          isAdmin ? {
-            label: <div onClick={e => e.stopPropagation()}>
-              <Popconfirm
-                title="Удалить пользователя?"
-                okText="Удалить"
-                cancelText="Отмена"
-                onConfirm={() => updateUserStatus(profile.id, 'delete')}
-              >
-                <span>Удалить пользователя</span>
-              </Popconfirm>
-            </div>,
-            icon: <DeleteOutlined />,
-            key: '4',
-            danger: true,
           } : null,
+          isAdmin
+            ? {
+                label: (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Popconfirm
+                      title="Удалить пользователя?"
+                      okText="Удалить"
+                      cancelText="Отмена"
+                      onConfirm={() => updateUserStatus(profile.id, 'delete')}
+                    >
+                      <span>Удалить пользователя</span>
+                    </Popconfirm>
+                  </div>
+                ),
+                icon: <DeleteOutlined />,
+                key: '4',
+                danger: true,
+              }
+            : null,
         ].filter(Boolean) as ItemType[];
 
-        return <Dropdown menu={{ items }} placement="bottomRight" arrow  trigger={['click']}>
-          <Button type="primary" icon={<MoreOutlined />} variant="filled" color="default" />
-        </Dropdown>},
+        return (
+          <Dropdown menu={{ items }} placement="bottomRight" arrow trigger={['click']}>
+            <Button type="primary" icon={<MoreOutlined />} variant="filled" color="default" />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -295,6 +367,51 @@ const UsersPage = () => {
     }));
   };
 
+  const options: SelectProps['options'] = [];
+  Object.values(RolesValues).forEach(value => {
+    let label;
+
+    switch (value) {
+      case RolesValues.ADMIN:
+        label = 'Администратор';
+        break;
+      case RolesValues.MODERATOR:
+        label = 'Модаротор';
+        break;
+      case RolesValues.USER:
+        label = 'Пользователь';
+        break;
+      default:
+        label = value;
+    }
+
+    options.push({
+      label: label,
+      value: value,
+    });
+  });
+
+  const handleUpdateUserRoles = async (values: RolesFormValues) => {
+    if (!currentUser) return;
+
+    try {
+      await adminUpdateRights(currentUser.id, values.roles);
+      setCurrentUser(null);
+      setIsOpenDrawer(false);
+    } catch (error) {
+      const err = error as Error;
+      notification.error({
+        message: err.message,
+      });
+    } finally {
+      setFilter((prev) => ({ ...prev }));
+    }
+  };
+  const closeDrawerRoles = () => {
+    setCurrentUser(null);
+    setIsOpenDrawer(false);
+  }
+
   return (
     <>
       <Title level={2} style={{ marginTop: 0 }}>
@@ -306,16 +423,16 @@ const UsersPage = () => {
           <Input />
         </Form.Item>
 
-        {isAdmin &&
+        {isAdmin && (
           <Form.Item label="Статус блокировки" name="isBlocked">
             <Radio.Group
               value={filter.isBlocked}
               onChange={(e: CheckboxChangeEvent) => {
-                setFilter(prev => ({
+                setFilter((prev) => ({
                   ...prev,
                   page: 1,
                   isBlocked: e.target.value,
-                }))
+                }));
               }}
             >
               <Radio.Button value={undefined}>Все пользователи</Radio.Button>
@@ -323,7 +440,7 @@ const UsersPage = () => {
               <Radio.Button value={true}>Заблокированные</Radio.Button>
             </Radio.Group>
           </Form.Item>
-        }
+        )}
       </Form>
 
       {isLoading && (
@@ -348,6 +465,45 @@ const UsersPage = () => {
         />
       )}
 
+      <Drawer
+        title={`Права пользователя | ${currentUser?.username}`}
+        placement="right"
+        mask={true}
+        onClose={() => setIsOpenDrawer(false)}
+        open={isOpenDrawer}
+      >
+        <Form<RolesFormValues>
+          form={rolesForm}
+          layout="vertical"
+          autoComplete="off"
+          onFinish={handleUpdateUserRoles}
+          style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+        >
+          <Form.Item label="Роли пользователя" name="roles">
+            <Select
+              mode="multiple"
+              style={{ width: '100%' }}
+              placeholder="Please select"
+              options={options}
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginTop: 'auto', marginBottom: 0 }}>
+            <Row gutter={16}>
+              <Col span={8}>
+                <Button type="dashed" shape="round" onClick={closeDrawerRoles} size="large" block>
+                  Отмена
+                </Button>
+              </Col>
+              <Col span={16}>
+                <Button type="primary" shape="round" htmlType="submit" size="large" block>
+                  Сохранить
+                </Button>
+              </Col>
+            </Row>
+          </Form.Item>
+        </Form>
+      </Drawer>
     </>
   );
 };
